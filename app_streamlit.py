@@ -9,6 +9,40 @@ import os
 # 🌍 多语言配置 / Multi-language Config
 # ------------------------------------------------------------
 LANG = {
+    "ภาษาไทย": {
+        "title": "🇹🇭 วิเคราะห์หวยไทย (AI)",
+        "password_label": "กรุณาใส่รหัสผ่าน (Enter Password):",
+        "password_error": "😕 รหัสผ่านผิด",
+        "data_loaded": "💾 โหลดข้อมูลแล้ว",
+        "data_latest": "งวดล่าสุด: ",
+        "tab_trend": "🔥 เลขเด็ด (ตามสถิติ)",
+        "tab_random": "🧪 เลขสุ่ม (คณิตศาสตร์)",
+        "trend_desc": "แนะนำเลขที่ออกบ่อยในอดีต (Top Hits)",
+        "random_desc": "สุ่มตัวเลขตามหลักความน่าจะเป็น (Pure Random)",
+        "rec_label_trend": "เลขแนะนำ",
+        "rec_label_radom": "เลขสุ่ม",
+        "reason": "ออก {} ครั้ง",
+        "reason_rnd": "สุ่มแท้จริง",
+        "ev_title": "📊 ความจริงทางคณิตศาสตร์",
+        "ev_desc": "ตารางแสดงมูลค่าจริงของสลากฯ เมื่อเทียบกับราคาขาย",
+        "ev_col_prize": "รางวัล",
+        "ev_col_rule": "กติกา",
+        "ev_col_amount": "เงินรางวัล",
+        "ev_col_prob": "โอกาส",
+        "ev_col_value": "มูลค่าจริง",
+        "ev_conclusion": "💡 บทสรุป",
+        "ev_conclusion_text": "ราคาขาย 80 บาท แต่มูลค่าทางคณิตศาสตร์เพียง {:.2f} บาท\nทุกใบที่คุณซื้อ คือการขาดทุนทางทฤษฎี {:.2f} บาท",
+        "sim_title": "💰 จำลองการซื้อขายย้อนหลัง",
+        "sim_years_label": "ระยะเวลาจำลอง (ปี)",
+        "sim_btn": "เริ่มจำลอง",
+        "sim_strategy_desc": "ℹ️ กลยุทธ์การจำลอง: ซื้อสุ่มงวดละ 1 ชุด (80 บาท) ตรวจรางวัลเลขท้าย 2 ตัวและ 3 ตัวหน้า/หลัง",
+        "sim_total_cost": "ต้นทุนรวม",
+        "sim_total_return": "เงินรางวัลรวม",
+        "sim_net": "กำไร/ขาดทุน",
+        "sim_loss_msg": "📉 บทเรียน: ในระยะยาว การซื้อหวยมักจะขาดทุน",
+        "sim_win_msg": "🎉 โชคดีมาก! (แต่เป็นเหตุการณ์ที่เกิดขึ้นยาก)",
+        "footer": "🔒 Private Access Only | 888"
+    },
     "中文": {
         "title": "🇹🇭 泰国彩票智能决策",
         "password_label": "请输入访问密码:",
@@ -17,14 +51,14 @@ LANG = {
         "data_latest": "最新: ",
         "tab_trend": "🔥 趋势策略 (追热)",
         "tab_random": "🧪 随机策略 (防守)",
-        "trend_desc": "基于历史热度加权推荐 (假设热号持续)",
+        "trend_desc": "基于历史出现频率最高的号码推荐",
         "random_desc": "完全数学随机推荐 (承认独立概率)",
         "rec_label_trend": "推荐",
         "rec_label_radom": "随机",
-        "reason": "历史出现 {} 次",
-        "reason_rnd": "纯随机生成",
+        "reason": "出现 {} 次",
+        "reason_rnd": "纯随机",
         "ev_title": "📊 奖金结构与数学真相",
-        "ev_desc": "这是彩票的真实价值表。揭示了为什么长期“买多亏多”。",
+        "ev_desc": "这是彩票的真实价值表。",
         "ev_col_prize": "奖项",
         "ev_col_rule": "规则",
         "ev_col_amount": "奖金",
@@ -32,10 +66,10 @@ LANG = {
         "ev_col_value": "贡献价值",
         "ev_conclusion": "💡 核心结论",
         "ev_conclusion_text": "一张售价 80 THB 的彩票，数学价值仅 {:.2f} THB。\n每买一张，理论亏损 {:.2f} THB。",
-        "sim_title": "💰 历史回测模拟",
-        "sim_years_label": "回测过去多少年数据？",
+        "sim_title": "💰 历史购买模拟",
+        "sim_years_label": "模拟时长 (年)",
         "sim_btn": "开始模拟",
-        "sim_strategy_desc": "ℹ️ 模拟策略：假设每期随机购买 1 张 (80 THB)，只统计末两位和前后三奖项。",
+        "sim_strategy_desc": "ℹ️ 模拟策略：假设每期购买 1 张 (80 THB)，只统计末两位和前后三奖项。",
         "sim_total_cost": "总投入",
         "sim_total_return": "总回报",
         "sim_net": "净盈亏",
@@ -49,14 +83,14 @@ LANG = {
         "password_error": "😕 Incorrect Password",
         "data_loaded": "💾 Data Loaded",
         "data_latest": "Latest: ",
-        "tab_trend": "🔥 Trend Strategy",
-        "tab_random": "🧪 Random Strategy",
-        "trend_desc": "Weighted recommendation based on history.",
-        "random_desc": "Pure mathematical random selection.",
+        "tab_trend": "🔥 Trend Pick",
+        "tab_random": "🧪 Random Pick",
+        "trend_desc": "Based on historical frequency (Hot Numbers)",
+        "random_desc": "Pure mathematical random selection",
         "rec_label_trend": "Pick",
         "rec_label_radom": "Rand",
         "reason": "Hit {} times",
-        "reason_rnd": "Pure Random",
+        "reason_rnd": "Random",
         "ev_title": "📊 Math & Truth",
         "ev_desc": "The real mathematical value of a lottery ticket.",
         "ev_col_prize": "Prize",
@@ -67,7 +101,7 @@ LANG = {
         "ev_conclusion": "💡 Conclusion",
         "ev_conclusion_text": "Ticket Price: 80 THB, Real Value: {:.2f} THB.\nTheoretical loss per ticket: {:.2f} THB.",
         "sim_title": "💰 Backtest Simulation",
-        "sim_years_label": "Years to backtest:",
+        "sim_years_label": "Duration (Years)",
         "sim_btn": "Run Simulation",
         "sim_strategy_desc": "ℹ️ Strategy: Buy 1 ticket (80 THB) randomly per draw.",
         "sim_total_cost": "Total Cost",
@@ -76,63 +110,30 @@ LANG = {
         "sim_loss_msg": "📉 Long-term participation is a negative-sum game.",
         "sim_win_msg": "🎉 Lucky! But this is rare.",
         "footer": "🔒 Private Access Only"
-    },
-    "ภาษาไทย": {
-        "title": "🇹🇭 วิเคราะห์หวยไทย",
-        "password_label": "กรุณาใส่รหัสผ่าน:",
-        "password_error": "😕 รหัสผ่านผิด",
-        "data_loaded": "💾 โหลดข้อมูลแล้ว",
-        "data_latest": "ล่าสุด: ",
-        "tab_trend": "🔥 เลขเด็ด (ตามสถิติ)",
-        "tab_random": "🧪 เลขสุ่ม (คณิตศาสตร์)",
-        "trend_desc": "แนะนำตามความถี่ในอดีต",
-        "random_desc": "สุ่มตามหลักคณิตศาสตร์อย่างแท้จริง",
-        "rec_label_trend": "แนะนำ",
-        "rec_label_radom": "สุ่ม",
-        "reason": "ออกแล้ว {} ครั้ง",
-        "reason_rnd": "สุ่มแท้จริง",
-        "ev_title": "📊 ความจริงทางคณิตศาสตร์",
-        "ev_desc": "มูลค่าที่แท้จริงของสลากกินแบ่งรัฐบาล",
-        "ev_col_prize": "รางวัล",
-        "ev_col_rule": "กติกา",
-        "ev_col_amount": "เงินรางวัล",
-        "ev_col_prob": "โอกาส",
-        "ev_col_value": "มูลค่าจริง",
-        "ev_conclusion": "💡 สรุป",
-        "ev_conclusion_text": "ราคา 80 บาท มูลค่าจริงเพียง {:.2f} บาท\nขาดทุนทางทฤษฎีใบละ {:.2f} บาท",
-        "sim_title": "💰 จำลองผลย้อนหลัง",
-        "sim_years_label": "ย้อนหลังกี่ปี?",
-        "sim_btn": "เริ่มจำลอง",
-        "sim_strategy_desc": "ℹ️ กลยุทธ์: ซื้อสุ่มงวดละ 1 ใบ (80 บาท)",
-        "sim_total_cost": "ต้นทุนรวม",
-        "sim_total_return": "ได้รับรางวัล",
-        "sim_net": "กำไร/ขาดทุน",
-        "sim_loss_msg": "📉 ในระยะยาว คุณมีโอกาสขาดทุนสูง",
-        "sim_win_msg": "🎉 โชคดีมาก! แต่นี่เป็นโอกาสน้อย",
-        "footer": "🔒 สำหรับผู้ได้รับอนุญาตเท่านั้น"
     }
 }
 
 # ------------------------------------------------------------
-# 页面配置
+# 页面配置 (Page Config)
 # ------------------------------------------------------------
 st.set_page_config(page_title="Thai Lottery", page_icon="🎰", layout="centered")
 
-# 语言选择 (放在 Sidebar 或顶部)
-# 默认中文
+# 语言选择 (放在顶部，默认泰语)
 if "lang_choice" not in st.session_state:
-    st.session_state["lang_choice"] = "中文"
+    st.session_state["lang_choice"] = "ภาษาไทย"
 
 # Top language selector
 c1, c2 = st.columns([3, 1])
 with c2:
-    lang_opt = st.selectbox("Language / ภาษา", ["中文", "English", "ภาษาไทย"], label_visibility="collapsed")
+    # Index 0 is "ภาษาไทย" to make it default in UI dropdown if list is ordered
+    options = ["ภาษาไทย", "中文", "English"]
+    lang_opt = st.selectbox("Language", options, label_visibility="collapsed")
     st.session_state["lang_choice"] = lang_opt
 
 T = LANG[st.session_state["lang_choice"]]
 
 # ------------------------------------------------------------
-# 🔐 安全验证
+# 🔐 安全验证 (Security)
 # ------------------------------------------------------------
 def check_password():
     def password_entered():
@@ -195,7 +196,7 @@ for idx, row in df.iterrows():
 counter_2 = collections.Counter(all_2digits)
 
 # -----------------------------------------------
-# 1. 选号助手
+# 1. 选号助手 (Smart Picker)
 # -----------------------------------------------
 st.divider()
 tab1, tab2 = st.tabs([T["tab_trend"], T["tab_random"]])
@@ -211,8 +212,8 @@ with tab1:
         for i, num in enumerate(trend_picks):
             # 获取该号码的历史出现次数
             count = counter_2[num]
+            # 强化显示依据
             cols[i].metric(label=f"{T['rec_label_trend']} {i+1}", value=num, delta=T["reason"].format(count))
-            cols[i].caption(f"Valid: {T['reason'].format(count)}") # fallback if metric delta confusing
 
 with tab2:
     st.write(T["random_desc"])
@@ -222,13 +223,13 @@ with tab2:
         cols[i].metric(label=f"{T['rec_label_radom']} {i+1}", value=num)
 
 # -----------------------------------------------
-# 2. 数学表
+# 2. 数学表 (Math Table)
 # -----------------------------------------------
 st.divider()
 st.subheader(T["ev_title"])
 st.markdown(T["ev_desc"])
 
-# 构建多语言数据表
+# 构建多语言数据表 (Cleaned up titles)
 if st.session_state["lang_choice"] == "中文":
     p_names = ["一等奖", "二等奖", "三等奖", "四等奖", "五等奖", "邻近奖", "前/后三", "末两位"]
     p_rules = ["6位全中", "6位", "6位", "6位", "6位", "头奖±1", "前3或后3", "末2位"]
@@ -260,15 +261,15 @@ loss = 80 - total_ev
 st.info(T["ev_conclusion_text"].format(total_ev, loss))
 
 # -----------------------------------------------
-# 3. 回测模拟
+# 3. 回测模拟 (Simulation)
 # -----------------------------------------------
 st.divider()
 st.subheader(T["sim_title"])
-st.caption(T["sim_strategy_desc"])
-
+# 动态年份选择
 years_sim = st.slider(T["sim_years_label"], 1, 10, 5)
 
 if st.button(T["sim_btn"]):
+    st.caption(T["sim_strategy_desc"]) # Display strategy only when running
     weeks = years_sim * 24 
     cost = weeks * 80 
     
