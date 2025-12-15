@@ -4,6 +4,7 @@ import pandas as pd
 import random
 import collections
 import os
+import datetime
 
 # ------------------------------------------------------------
 # 🌍 多语言配置 / Multi-language Config
@@ -14,6 +15,7 @@ LANG = {
         "password_label": "กรุณาใส่รหัสผ่าน (Enter Password):",
         "password_error": "😕 รหัสผ่านผิด",
         "data_loaded": "💾 โหลดข้อมูลแล้ว",
+        "data_total_fmt": " (ทั้งหมด {} งวด)",
         "data_latest": "งวดล่าสุด: ",
         "tab_trend": "🔥 เลขเด็ด (ตามสถิติ)",
         "tab_random": "🧪 เลขสุ่ม (คณิตศาสตร์)",
@@ -32,15 +34,31 @@ LANG = {
         "ev_col_value": "มูลค่าจริง",
         "ev_conclusion": "💡 บทสรุป",
         "ev_conclusion_text": "ราคาขาย 80 บาท แต่มูลค่าทางคณิตศาสตร์เพียง {:.2f} บาท\nทุกใบที่คุณซื้อ คือการขาดทุนทางทฤษฎี {:.2f} บาท",
-        "sim_title": "💰 จำลองการซื้อขายย้อนหลัง",
-        "sim_years_label": "ระยะเวลาจำลอง (ปี)",
+        # Backtest
+        "bt_title": "⏪ ทดสอบย้อนหลัง (Backtest)",
+        "bt_years_label": "ย้อนหลังกี่ปี?",
+        "bt_btn": "เริ่มทดสอบ",
+        "bt_info_range": "ช่วงเวลา: {} ถึง {}",
+        "bt_info_count": "จำนวนงวด: {} งวด",
+        "bt_info_cost": "ทุน: ซื้อ 3 ชุด/งวด (ชุดละ 80 บาท)",
+        "bt_strat_trend": "🔥 กลยุทธ์เลขเด็ด (Trend)",
+        "bt_strat_rand": "🧪 กลยุทธ์สุ่ม (Random)",
+        "bt_col_hits": "ถูกรางวัล",
+        "bt_col_invest": "เงินลงทุน",
+        "bt_col_return": "เงินรางวัล",
+        "bt_col_net": "กำไร/ขาดทุน",
+        "bt_col_roi": "ROI (%)",
+        "bt_conclusion": "🧐 บทสรุปการทดสอบ",
+        "bt_con_equal": "ทั้งสองกลยุทธ์ให้ผลลัพธ์ใกล้เคียงกัน ยืนยันว่าหวยเป็นเรื่องของดวง",
+        "bt_con_trend": "กลยุทธ์เลขเด็ดทำได้ดีกว่าเล็กน้อย (อาจเป็นเพียงความบังเอิญ)",
+        "bt_con_rand": "กลยุทธ์สุ่มทำได้ดีกว่า! แสดงว่าการเก็งเลขไม่ได้ผลเสมอไป",
+        # Simulation
+        "sim_title": "💰 จำลองความน่าจะเป็น (Monte Carlo)",
+        "sim_desc": "จำลองการซื้อหวยด้วยความน่าจะเป็นทางคณิตศาสตร์ (รวมรางวัลที่ 1)",
         "sim_btn": "เริ่มจำลอง",
-        "sim_strategy_desc": "ℹ️ กลยุทธ์การจำลอง: ซื้อสุ่มงวดละ 1 ชุด (80 บาท) ตรวจรางวัลเลขท้าย 2 ตัวและ 3 ตัวหน้า/หลัง",
-        "sim_total_cost": "ต้นทุนรวม",
-        "sim_total_return": "เงินรางวัลรวม",
-        "sim_net": "กำไร/ขาดทุน",
-        "sim_loss_msg": "📉 บทเรียน: ในระยะยาว การซื้อหวยมักจะขาดทุน",
-        "sim_win_msg": "🎉 โชคดีมาก! (แต่เป็นเหตุการณ์ที่เกิดขึ้นยาก)",
+        "sim_result_label": "ผลลัพธ์จำลอง 5 ปี (ซื้อ 1 ใบ/งวด)",
+        "sim_comment_loss": "💡 ความเห็น: ขาดทุนตามคาด การพนันมีความเสี่ยง",
+        "sim_comment_win": "💡 ความเห็น: โชคดีมาก! (แต่เกิดขึ้นยาก)",
         "footer": "🔒 Private Access Only | 888"
     },
     "中文": {
@@ -48,6 +66,7 @@ LANG = {
         "password_label": "请输入访问密码:",
         "password_error": "😕 密码错误",
         "data_loaded": "💾 数据已加载",
+        "data_total_fmt": " (共 {} 期)",
         "data_latest": "最新: ",
         "tab_trend": "🔥 趋势策略 (追热)",
         "tab_random": "🧪 随机策略 (防守)",
@@ -66,15 +85,31 @@ LANG = {
         "ev_col_value": "贡献价值",
         "ev_conclusion": "💡 核心结论",
         "ev_conclusion_text": "一张售价 80 THB 的彩票，数学价值仅 {:.2f} THB。\n每买一张，理论亏损 {:.2f} THB。",
-        "sim_title": "💰 历史购买模拟",
-        "sim_years_label": "模拟时长 (年)",
-        "sim_btn": "开始模拟",
-        "sim_strategy_desc": "ℹ️ 模拟策略：假设每期购买 1 张 (80 THB)，只统计末两位和前后三奖项。",
-        "sim_total_cost": "总投入",
-        "sim_total_return": "总回报",
-        "sim_net": "净盈亏",
-        "sim_loss_msg": "📉 结论：长期参与是负和游戏。",
-        "sim_win_msg": "🎉 运气爆表！但请记得这是极小概率事件。",
+        # Backtest
+        "bt_title": "⏪ 历史回测 (Backtest)",
+        "bt_years_label": "回测过去多少年数据？",
+        "bt_btn": "开始回测",
+        "bt_info_range": "回测区间: {} 至 {}",
+        "bt_info_count": "回测期数: {} 期",
+        "bt_info_cost": "策略设定: 每期购买 3 注 2位数号码 (成本 240 THB)",
+        "bt_strat_trend": "🔥 趋势策略 (Trend)",
+        "bt_strat_rand": "🧪 随机策略 (Random)",
+        "bt_col_hits": "中奖次数",
+        "bt_col_invest": "总投入",
+        "bt_col_return": "总回报",
+        "bt_col_net": "净盈亏",
+        "bt_col_roi": "回报率 (ROI)",
+        "bt_conclusion": "🧐 回测结论",
+        "bt_con_equal": "两种策略表现几乎一致！这再次验证了彩票的随机游走性质。",
+        "bt_con_trend": "趋势策略略微领先，但这可能仅仅是运气波动。",
+        "bt_con_rand": "随机策略竟然反超了！说明追热号并不总是有效。",
+        # Simulation
+        "sim_title": "💰 纯概率模拟 (含头奖)",
+        "sim_desc": "基于数学期望的 Monte Carlo 模拟，包含从一等奖到小奖的所有概率。",
+        "sim_btn": "运行概率模拟",
+        "sim_result_label": "模拟结果 (每期买1张，持续5年)",
+        "sim_comment_loss": "💡 点评: 长期参与大概率是亏损的，请保持娱乐心态。",
+        "sim_comment_win": "💡 点评: 运气不错，小赚一笔！主要是靠运气。",
         "footer": "🔒 私有部署 | 仅限授权访问"
     },
     "English": {
@@ -82,6 +117,7 @@ LANG = {
         "password_label": "Enter Password:",
         "password_error": "😕 Incorrect Password",
         "data_loaded": "💾 Data Loaded",
+        "data_total_fmt": " (Total {})",
         "data_latest": "Latest: ",
         "tab_trend": "🔥 Trend Pick",
         "tab_random": "🧪 Random Pick",
@@ -100,15 +136,31 @@ LANG = {
         "ev_col_value": "Value",
         "ev_conclusion": "💡 Conclusion",
         "ev_conclusion_text": "Ticket Price: 80 THB, Real Value: {:.2f} THB.\nTheoretical loss per ticket: {:.2f} THB.",
-        "sim_title": "💰 Backtest Simulation",
-        "sim_years_label": "Duration (Years)",
+        # Backtest
+        "bt_title": "⏪ Historical Backtest",
+        "bt_years_label": "Years to backtest:",
+        "bt_btn": "Start Backtest",
+        "bt_info_range": "Range: {} to {}",
+        "bt_info_count": "Draws: {}",
+        "bt_info_cost": "Strategy: Buy 3 tickets (2-digits) per draw.",
+        "bt_strat_trend": "🔥 Trend Strategy",
+        "bt_strat_rand": "🧪 Random Strategy",
+        "bt_col_hits": "Hits",
+        "bt_col_invest": "Invest",
+        "bt_col_return": "Return",
+        "bt_col_net": "Net",
+        "bt_col_roi": "ROI",
+        "bt_conclusion": "🧐 Conclusion",
+        "bt_con_equal": "Both strategies performed similarly. Random walk confirmed.",
+        "bt_con_trend": "Trend strategy performed slightly better (likely luck).",
+        "bt_con_rand": "Random strategy outperformed Trend! Hot numbers don't guarantee wins.",
+        # Simulation
+        "sim_title": "💰 Monte Carlo Simulation",
+        "sim_desc": "Pure probability simulation including Jackpot chances.",
         "sim_btn": "Run Simulation",
-        "sim_strategy_desc": "ℹ️ Strategy: Buy 1 ticket (80 THB) randomly per draw.",
-        "sim_total_cost": "Total Cost",
-        "sim_total_return": "Total Return",
-        "sim_net": "Net Profit",
-        "sim_loss_msg": "📉 Long-term participation is a negative-sum game.",
-        "sim_win_msg": "🎉 Lucky! But this is rare.",
+        "sim_result_label": "Simulation (1 ticket/draw for 5 years)",
+        "sim_comment_loss": "💡 Comment: Long term loss is expected.",
+        "sim_comment_win": "💡 Comment: Super Lucky! But rare.",
         "footer": "🔒 Private Access Only"
     }
 }
@@ -118,14 +170,12 @@ LANG = {
 # ------------------------------------------------------------
 st.set_page_config(page_title="Thai Lottery", page_icon="🎰", layout="centered")
 
-# 语言选择 (放在顶部，默认泰语)
 if "lang_choice" not in st.session_state:
     st.session_state["lang_choice"] = "ภาษาไทย"
 
 # Top language selector
 c1, c2 = st.columns([3, 1])
 with c2:
-    # Index 0 is "ภาษาไทย" to make it default in UI dropdown if list is ordered
     options = ["ภาษาไทย", "中文", "English"]
     lang_opt = st.selectbox("Language", options, label_visibility="collapsed")
     st.session_state["lang_choice"] = lang_opt
@@ -137,7 +187,7 @@ T = LANG[st.session_state["lang_choice"]]
 # ------------------------------------------------------------
 def check_password():
     def password_entered():
-        if st.session_state["password"] == "8888":
+        if st.session_state["password"] == "888":
             st.session_state["password_correct"] = True
             del st.session_state["password"]
         else:
@@ -174,6 +224,8 @@ def load_data():
             except: return pd.NaT
     df['date_obj'] = df['date'].apply(parse_dt)
     df = df.sort_values('date_obj', ascending=False)
+    # Ensure proper reset index for iteration later
+    df = df.reset_index(drop=True)
     return df
 
 df = load_data()
@@ -182,8 +234,9 @@ if df.empty:
     st.error("No Data Found.")
     st.stop()
 
-# 数据加载显示 (分两行优化手机体验)
-st.success(f"{T['data_loaded']} (Total {len(df)})")
+# 数据加载显示 (本地化)
+total_str = T["data_total_fmt"].format(len(df))
+st.success(f"{T['data_loaded']}{total_str}")
 st.text(f"{T['data_latest']} {df.iloc[0]['date']}")
 
 # 统计频率
@@ -204,15 +257,12 @@ tab1, tab2 = st.tabs([T["tab_trend"], T["tab_random"]])
 with tab1:
     st.write(T["trend_desc"])
     cols = st.columns(3)
-    # 模拟加权选择
     population = list(counter_2.keys())
     weights = list(counter_2.values())
     if population:
         trend_picks = random.choices(population, weights=weights, k=3)
         for i, num in enumerate(trend_picks):
-            # 获取该号码的历史出现次数
             count = counter_2[num]
-            # 强化显示依据
             cols[i].metric(label=f"{T['rec_label_trend']} {i+1}", value=num, delta=T["reason"].format(count))
 
 with tab2:
@@ -229,7 +279,6 @@ st.divider()
 st.subheader(T["ev_title"])
 st.markdown(T["ev_desc"])
 
-# 构建多语言数据表 (Cleaned up titles)
 if st.session_state["lang_choice"] == "中文":
     p_names = ["一等奖", "二等奖", "三等奖", "四等奖", "五等奖", "邻近奖", "前/后三", "末两位"]
     p_rules = ["6位全中", "6位", "6位", "6位", "6位", "头奖±1", "前3或后3", "末2位"]
@@ -243,17 +292,13 @@ else:
 data_ev = {
     T["ev_col_prize"]: p_names,
     T["ev_col_amount"]: [6000000, 200000, 80000, 40000, 20000, 100000, 4000, 2000],
-    T["ev_col_prob"]: [1, 5, 10, 50, 100, 2, 4000, 10000], # per million
+    T["ev_col_prob"]: [1, 5, 10, 50, 100, 2, 4000, 10000], 
     T["ev_col_rule"]: p_rules
 }
 df_ev = pd.DataFrame(data_ev)
-
-# 计算
 df_ev[T["ev_col_value"]] = df_ev[T["ev_col_amount"]] * (df_ev[T["ev_col_prob"]] / 1000000)
-# 格式化概率显示 1/N
 df_ev[T["ev_col_prob"]] = df_ev[T["ev_col_prob"]].apply(lambda x: f"1/{int(1000000/x):,}")
 
-# 展示
 st.dataframe(df_ev[[T["ev_col_prize"], T["ev_col_rule"], T["ev_col_amount"], T["ev_col_prob"], T["ev_col_value"]]], hide_index=True)
 
 total_ev = df_ev[T["ev_col_value"]].sum()
@@ -261,38 +306,148 @@ loss = 80 - total_ev
 st.info(T["ev_conclusion_text"].format(total_ev, loss))
 
 # -----------------------------------------------
-# 3. 回测模拟 (Simulation)
+# 3. 详细历史回测 (Detailed Backtest)
+# -----------------------------------------------
+st.divider()
+st.subheader(T["bt_title"])
+
+years_back = st.slider(T["bt_years_label"], 1, 10, 5)
+
+if st.button(T["bt_btn"]):
+    with st.spinner("Simulating... / กำลังคำนวณ..."):
+        # Prepare data (Oldest to Newest)
+        chron_data = df.sort_values('date_obj', ascending=True)
+        latest_date = chron_data.iloc[-1]['date_obj']
+        start_date = latest_date - pd.DateOffset(years=years_back)
+        
+        test_set = chron_data[chron_data['date_obj'] >= start_date]
+        
+        st.write(T["bt_info_range"].format(start_date.strftime('%Y-%m-%d'), latest_date.strftime('%Y-%m-%d')))
+        st.write(T["bt_info_count"].format(len(test_set)))
+        st.caption(T["bt_info_cost"])
+        
+        results = {
+            "Trend": {"cost": 0, "win": 0, "hits": 0},
+            "Random": {"cost": 0, "win": 0, "hits": 0}
+        }
+        
+        # Simulate logic (Same as CLI)
+        current_data_pool = chron_data[chron_data['date_obj'] < start_date].copy()
+        for idx, row in test_set.iterrows():
+            target_val = str(row['prize_2digits']).strip()
+            if len(target_val) == 1: target_val = "0" + target_val
+            
+            # Update history pool (Add previous draw)
+            # Actually for rolling, we need data available BEFORE this draw
+            # For simplicity, we assume we update pool dynamically
+            
+            # 1. Calc Trend
+            pool_vals = []
+            for _, r in current_data_pool.iterrows():
+                v = str(r['prize_2digits']).strip()
+                if len(v) == 1: v = "0" + v
+                if v and v.lower() != 'nan': pool_vals.append(v)
+            
+            if pool_vals:
+                ctr = collections.Counter(pool_vals)
+                picks_trend = random.choices(list(ctr.keys()), weights=list(ctr.values()), k=3)
+            else:
+                picks_trend = [f"{random.randint(0,99):02d}" for _ in range(3)]
+            
+            picks_rand = [f"{random.randint(0,99):02d}" for _ in range(3)]
+            
+            # Check Win
+            cost_per_draw = 240 # 3 tickets * 80
+            results["Trend"]["cost"] += cost_per_draw
+            results["Random"]["cost"] += cost_per_draw
+            
+            if target_val in picks_trend:
+                results["Trend"]["win"] += 2000
+                results["Trend"]["hits"] += 1
+            if target_val in picks_rand:
+                results["Random"]["win"] += 2000
+                results["Random"]["hits"] += 1
+            
+            # Add current draw to pool for NEXT round
+            current_data_pool = pd.concat([current_data_pool, pd.DataFrame([row])])
+
+        # Show Results Table
+        res_data = []
+        for strat, name in [("Trend", T["bt_strat_trend"]), ("Random", T["bt_strat_rand"])]:
+            r = results[strat]
+            net = r["win"] - r["cost"]
+            roi = (net / r["cost"]) * 100 if r["cost"] > 0 else 0
+            res_data.append({
+                "Strategy": name,
+                T["bt_col_hits"]: f"{r['hits']} / {len(test_set)}",
+                T["bt_col_invest"]: f"{r['cost']:,}",
+                T["bt_col_return"]: f"{r['win']:,}",
+                T["bt_col_net"]: f"{net:,}",
+                T["bt_col_roi"]: f"{roi:.2f}%"
+            })
+        
+        st.table(pd.DataFrame(res_data).set_index("Strategy"))
+        
+        # Conclusion
+        diff = results["Trend"]["hits"] - results["Random"]["hits"]
+        st.subheader(T["bt_conclusion"])
+        if abs(diff) <= 2:
+            st.info(T["bt_con_equal"])
+        elif diff > 0:
+            st.warning(T["bt_con_trend"])
+        else:
+            st.error(T["bt_con_rand"])
+
+# -----------------------------------------------
+# 4. 纯概率模拟 (Monte Carlo with Jackpot)
 # -----------------------------------------------
 st.divider()
 st.subheader(T["sim_title"])
-# 动态年份选择
-years_sim = st.slider(T["sim_years_label"], 1, 10, 5)
+st.markdown(T["sim_desc"])
 
 if st.button(T["sim_btn"]):
-    st.caption(T["sim_strategy_desc"]) # Display strategy only when running
-    weeks = years_sim * 24 
-    cost = weeks * 80 
+    st.write(T["sim_result_label"])
     
-    # Simple Sim
-    wins = 0
-    # Simulate: 1 ticket per draw, check 2digit (1%) and 3digit (0.4%)
-    for _ in range(weeks):
-        r = random.random()
-        if r < 0.01: wins += 2000
-        elif r < 0.014: wins += 4000
+    simulations = 120 # 5 years
+    ticket_price = 80
+    total_cost = 0
+    total_win = 0
+    jackpot_hit = False
     
-    net = wins - cost
+    progress_bar = st.progress(0)
+    
+    for i in range(simulations):
+        total_cost += ticket_price
+        # Check prizes independently
+        current_win = 0
+        # 2 Digits (1/100)
+        if random.random() < 0.01: current_win += 2000
+        # 3 Digits (4/1000)
+        if random.random() < 0.004: current_win += 4000
+        # Jackpot (1/1M)
+        if random.random() < 0.000001: 
+            current_win += 6000000
+            jackpot_hit = True
+        # Small prizes approx
+        if random.random() < 0.00016: current_win += 20000 # Approx avg
+            
+        total_win += current_win
+        progress_bar.progress((i + 1) / simulations)
+        
+    net_profit = total_win - total_cost
     
     c1, c2, c3 = st.columns(3)
-    c1.metric(T["sim_total_cost"], f"{cost}")
-    c2.metric(T["sim_total_return"], f"{wins}")
-    c3.metric(T["sim_net"], f"{net}", delta=net)
+    c1.metric(T["sim_total_cost"], f"{total_cost} THB")
+    c2.metric(T["sim_total_return"], f"{total_win} THB")
+    c3.metric(T["sim_net"], f"{net_profit} THB", delta=net_profit)
     
-    if net < 0:
-        st.warning(T["sim_loss_msg"])
-    else:
+    if jackpot_hit:
         st.balloons()
-        st.success(T["sim_win_msg"])
+        st.success("🤯 JACKPOT!!! " + T["sim_win_msg"])
+    elif net_profit > 0:
+        st.success(T["sim_comment_win"])
+    else:
+        st.warning(T["sim_comment_loss"])
 
 st.markdown("---")
 st.caption(T["footer"])
