@@ -29,9 +29,10 @@ LANG = {
         "ev_desc": "ตารางแสดงมูลค่าจริงของสลากฯ เมื่อเทียบกับราคาขาย",
         "ev_col_prize": "รางวัล",
         "ev_col_rule": "กติกา",
-        "ev_col_amount": "เงินรางวัล",
+        "ev_col_amount": "เงิน(บาท)", # Shortened
         "ev_col_prob": "โอกาส",
-        "ev_col_value": "มูลค่าจริง",
+        "ev_col_value": "มูลค่า",     # Shortened
+        "ev_conclusion": "💡 บทสรุป",
         "ev_conclusion_text": "ราคาขาย 80 บาท แต่มูลค่าทางคณิตศาสตร์เพียง {:.2f} บาท\nทุกใบที่คุณซื้อ คือการขาดทุนทางทฤษฎี {:.2f} บาท",
         # Backtest
         "bt_title": "⏪ ทดสอบย้อนหลัง (Backtest)",
@@ -337,8 +338,12 @@ data_ev = {
 df_ev = pd.DataFrame(data_ev)
 df_ev[T["ev_col_value"]] = df_ev[T["ev_col_amount"]] * (df_ev[T["ev_col_prob"]] / 1000000)
 df_ev[T["ev_col_prob"]] = df_ev[T["ev_col_prob"]].apply(lambda x: f"1/{int(1000000/x):,}")
-
-st.dataframe(df_ev[[T["ev_col_prize"], T["ev_col_rule"], T["ev_col_amount"], T["ev_col_prob"], T["ev_col_value"]]], hide_index=True)
+# 展示 (移除 Rule 列以适应手机窄屏)
+st.dataframe(
+    df_ev[[T["ev_col_prize"], T["ev_col_amount"], T["ev_col_prob"], T["ev_col_value"]]], 
+    hide_index=True,
+    use_container_width=True
+)
 
 total_ev = df_ev[T["ev_col_value"]].sum()
 loss = 80 - total_ev
