@@ -15,17 +15,27 @@ st.set_page_config(page_title="Thai Lottery", page_icon="💰", layout="centered
 # 强制去除顶部留白 + 优化移动端显示
 st.markdown("""
     <style>
-        /* 1. 减少顶部空白 */
         .block-container {
             padding-top: 1.5rem !important;
             padding-bottom: 2rem !important;
         }
-        /* 2. 隐藏右上角菜单 (可选，让界面更像App) */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
-        /* 3. 调整主标题在手机上的边距 */
         h1 {
             padding-bottom: 0px !important;
+        }
+        /* 子标题统一样式 */
+        .section-header {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+        .section-sub {
+            font-size: 0.9em; /* 稍微调大 */
+            color: #666;
+            margin-top: -5px;
+            margin-bottom: 15px;
+            display: block;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -54,12 +64,13 @@ LANG = {
         "ev_desc": "ตารางแสดงมูลค่าจริงของสลากฯ เมื่อเทียบกับราคาขาย",
         "ev_col_prize": "รางวัล",
         "ev_col_rule": "กติกา",
-        "ev_col_amount": "เงิน(฿)",    
+        "ev_col_amount": "เงินรางวัล",  # Revert to 'Prize Money'
         "ev_col_prob": "โอกาส",
         "ev_col_value": "มูลค่า",      
         "ev_conclusion_text": "ราคาขาย 80 บาท แต่มูลค่าทางคณิตศาสตร์เพียง {:.2f} บาท\nทุกใบที่คุณซื้อ คือการขาดทุนทางทฤษฎี {:.2f} บาท",
         # Backtest
-        "bt_title": "⏪ ทดสอบย้อนหลัง<br><span style='font-size:0.6em; color:grey'>Historical Backtest</span>",
+        "bt_title_main": "⏪ ทดสอบย้อนหลัง",
+        "bt_title_sub": "Historical Backtest",
         "bt_years_label": "ย้อนหลังกี่ปี?",
         "bt_btn": "เริ่มทดสอบ",
         "bt_header_info": "📋 ข้อมูลการทดสอบ",
@@ -79,7 +90,8 @@ LANG = {
         "bt_con_trend": "เลขเด็ดชนะเล็กน้อย (อาจเป็นแค่ดวง)",
         "bt_con_rand": "เลขสุ่มชนะ! การเก็งเลขตามสถิติไม่ได้ช่วยให้ถูกรางวัลมากขึ้น",
         # Simulation
-        "sim_title": "🎲 การจำลอง Monte Carlo<br><span style='font-size:0.6em; color:grey'>Monte Carlo Simulation</span>",
+        "sim_title_main": "🎲 การจำลอง Monte Carlo",
+        "sim_title_sub": "Monte Carlo Simulation",
         "sim_desc": "จำลองเหตุการณ์ในอนาคตด้วยความน่าจะเป็นทางคณิตศาสตร์",
         "sim_btn": "เริ่ม Monte Carlo",
         "sim_narration": "📝 สมมติฐาน: คุณซื้อหวยงวดละ 1 ใบ (80 บาท) ต่อเนื่องเป็นเวลา {} ปี...",
@@ -90,7 +102,8 @@ LANG = {
         "sim_res_win": "💡 ผลลัพธ์: กำไร (คุณโชคดีมาก!)",
         "sim_jackpot": "🤯 แจ็กพอตแตก! (ถูกรางวัลที่ 1)",
         # Validation
-        "val_title": "🧪 การทดสอบทางวิทยาศาสตร์<br><span style='font-size:0.6em; color:grey'>Chi-Square Test</span>",
+        "val_title_main": "🧪 การทดสอบทางวิทยาศาสตร์",
+        "val_title_sub": "Chi-Square Test",
         "val_desc": "ตรวจสอบว่าการออกรางวัล 'สุ่ม' จริงหรือไม่?",
         "val_res_pass": "✅ ผลลัพธ์: กระจายตัวแบบสุ่ม (Uniform Distribution)",
         "val_exp_pass": "ตัวเลขทางสถิติยืนยันว่าไม่มี 'ล็อคเลข' หรือ 'รูปแบบ' ที่คาดเดาได้",
@@ -123,7 +136,8 @@ LANG = {
         "ev_col_value": "贡献价值",
         "ev_conclusion_text": "一张售价 80 THB 的彩票，数学价值仅 {:.2f} THB。\n每买一张，理论亏损 {:.2f} THB。",
         # Backtest
-        "bt_title": "⏪ 历史回测<br><span style='font-size:0.6em; color:grey'>Historical Backtest</span>",
+        "bt_title_main": "⏪ 历史回测",
+        "bt_title_sub": "Historical Backtest",
         "bt_years_label": "回测过去多少年数据？",
         "bt_btn": "开始回测",
         "bt_header_info": "📋 回测详情",
@@ -143,7 +157,8 @@ LANG = {
         "bt_con_trend": "趋势策略略微领先 (可能是运气波动)。",
         "bt_con_rand": "随机策略竟然反超了！说明追热号并不总是有效。",
         # Simulation
-        "sim_title": "🎲 蒙特卡洛模拟<br><span style='font-size:0.6em; color:grey'>Monte Carlo Simulation</span>",
+        "sim_title_main": "🎲 蒙特卡洛模拟",
+        "sim_title_sub": "Monte Carlo Simulation",
         "sim_desc": "基于数学期望的纯概率模拟 (含头奖)",
         "sim_btn": "运行模拟",
         "sim_narration": "📝 模拟假设: 您坚持买彩票 {} 年，每期仅买 1 张 (80 THB)...",
@@ -154,7 +169,8 @@ LANG = {
         "sim_res_win": "💡 点评: 运气不错，小赚一笔！主要是靠运气。",
         "sim_jackpot": "🤯 天呐！中了头奖 (Jackpot)！",
         # Validation
-        "val_title": "🧪 科学有效性检验<br><span style='font-size:0.6em; color:grey'>Chi-Square Test</span>",
+        "val_title_main": "🧪 科学有效性检验",
+        "val_title_sub": "Chi-Square Test",
         "val_desc": "使用卡方检验 (Chi-Square Test) 验证号码分布是否随机。",
         "val_res_pass": "✅ 结论：分布均匀 (数据是随机的)",
         "val_exp_pass": "P值显示历史数据没有显著偏差。所谓的“热号”只是统计噪音。",
@@ -187,7 +203,8 @@ LANG = {
         "ev_col_value": "Value",
         "ev_conclusion_text": "Ticket Price: 80 THB, Real Value: {:.2f} THB.\nTheoretical loss per ticket: {:.2f} THB.",
         # Backtest
-        "bt_title": "⏪ Historical Backtest",
+        "bt_title_main": "⏪ Historical Backtest",
+        "bt_title_sub": "Simulation",
         "bt_years_label": "Years to backtest:",
         "bt_btn": "Start Backtest",
         "bt_header_info": "📋 Backtest Details",
@@ -207,7 +224,8 @@ LANG = {
         "bt_con_trend": "Trend strategy performed slightly better (likely luck).",
         "bt_con_rand": "Random strategy outperformed Trend.",
         # Simulation
-        "sim_title": "🎲 Monte Carlo Simulation",
+        "sim_title_main": "🎲 Monte Carlo Simulation",
+        "sim_title_sub": "Probabilistic Model",
         "sim_desc": "Pure probability simulation including Jackpot chances.",
         "sim_btn": "Run Simulation",
         "sim_narration": "📝 Assumption: Buying 1 ticket (80 THB) per draw for {} years...",
@@ -218,7 +236,8 @@ LANG = {
         "sim_res_win": "💡 Comment: Lucky!",
         "sim_jackpot": "🤯 JACKPOT HIT!",
         # Validation
-        "val_title": "🧪 Scientific Validation<br><span style='font-size:0.6em; color:grey'>Chi-Square Test</span>",
+        "val_title_main": "🧪 Scientific Validation",
+        "val_title_sub": "Chi-Square Test",
         "val_desc": "Testing for randomness using Chi-Square Goodness of Fit.",
         "val_res_pass": "✅ Result: Uniform Distribution",
         "val_exp_pass": "The data is truly random.",
@@ -268,7 +287,6 @@ if not check_password():
 # ------------------------------------------------------------
 # 主标题 (Main Title adjusted for Mobile)
 # ------------------------------------------------------------
-# 字体大小减小到 1.8em 以适应单行显示
 st.markdown(f"""
     <h1 style='text-align: center; color: #E63946; font-size: 1.8em; margin-bottom: 0px;'>
         {T['title']}
@@ -360,7 +378,10 @@ data_ev = {
 }
 df_ev = pd.DataFrame(data_ev)
 df_ev[T["ev_col_value"]] = df_ev[T["ev_col_amount"]] * (df_ev[T["ev_col_prob"]] / 1000000)
-df_ev[T["ev_col_prob"]] = df_ev[T["ev_col_prob"]].apply(lambda x: f"1/{int(1000000/x):,}")
+
+# 移除千分位并去掉所有小数位 (1/1000000 而不是 1/1,000,000)
+# 以节省宽度
+df_ev[T["ev_col_prob"]] = df_ev[T["ev_col_prob"]].apply(lambda x: f"1/{int(1000000/x)}") 
 
 # 展示
 st.dataframe(
@@ -377,8 +398,11 @@ st.info(T["ev_conclusion_text"].format(total_ev, loss))
 # 3. 详细历史回测 (Detailed Backtest)
 # -----------------------------------------------
 st.divider()
-# 使用 markdown 替代 subheader 以支持 HTML (分行)
-st.markdown(f"### {T['bt_title']}", unsafe_allow_html=True)
+# 自定义双行标题
+st.markdown(f"""
+    <div class='section-header'>{T['bt_title_main']}</div>
+    <div class='section-sub'>{T['bt_title_sub']}</div>
+""", unsafe_allow_html=True)
 
 years_back = st.slider(T["bt_years_label"], 1, 10, 5)
 
@@ -444,7 +468,10 @@ if st.button(T["bt_btn"]):
 # 4. Monte Carlo Simulation
 # -----------------------------------------------
 st.divider()
-st.markdown(f"### {T['sim_title']}", unsafe_allow_html=True)
+st.markdown(f"""
+    <div class='section-header'>{T['sim_title_main']}</div>
+    <div class='section-sub'>{T['sim_title_sub']}</div>
+""", unsafe_allow_html=True)
 st.markdown(T["sim_desc"])
 
 if st.button(T["sim_btn"]):
@@ -488,7 +515,10 @@ if st.button(T["sim_btn"]):
 # 5. Scientific Validation (Chi-Square)
 # -----------------------------------------------
 st.divider()
-st.markdown(f"### {T['val_title']}", unsafe_allow_html=True)
+st.markdown(f"""
+    <div class='section-header'>{T['val_title_main']}</div>
+    <div class='section-sub'>{T['val_title_sub']}</div>
+""", unsafe_allow_html=True)
 st.markdown(T["val_desc"])
 
 observed_counts = collections.Counter(all_2digits)
