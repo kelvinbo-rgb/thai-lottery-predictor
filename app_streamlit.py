@@ -8,8 +8,32 @@ import scipy.stats as stats
 import datetime
 
 # ------------------------------------------------------------
+# 🎨 界面样式优化 (CSS)
+# ------------------------------------------------------------
+st.set_page_config(page_title="Thai Lottery", page_icon="💰", layout="centered")
+
+# 强制去除顶部留白 + 优化移动端显示
+st.markdown("""
+    <style>
+        /* 1. 减少顶部空白 */
+        .block-container {
+            padding-top: 1.5rem !important;
+            padding-bottom: 2rem !important;
+        }
+        /* 2. 隐藏右上角菜单 (可选，让界面更像App) */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        /* 3. 调整主标题在手机上的边距 */
+        h1 {
+            padding-bottom: 0px !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# ------------------------------------------------------------
 # 🌍 多语言配置 / Multi-language Config
 # ------------------------------------------------------------
+# 使用 HTML 标签 <br> 和 <span> 来美化标题的分行显示
 LANG = {
     "ภาษาไทย": {
         "title": "💰 วิเคราะห์หวยไทย (AI)",
@@ -18,8 +42,8 @@ LANG = {
         "data_loaded": "💾 โหลดข้อมูลแล้ว",
         "data_total_fmt": " (ทั้งหมด {} งวด)",
         "data_latest": "งวดล่าสุด: ",
-        "tab_trend": "🔥 เลขเด็ด (ตามสถิติ)",
-        "tab_random": "🧪 เลขสุ่ม (คณิตศาสตร์)",
+        "tab_trend": "🔥 เลขเด็ด (Trend)",
+        "tab_random": "🧪 เลขสุ่ม (Random)",
         "trend_desc": "แนะนำเลขที่ออกบ่อยในอดีต (Top Hits)",
         "random_desc": "สุ่มตัวเลขตามหลักความน่าจะเป็น (Pure Random)",
         "rec_label_trend": "เลขแนะนำ",
@@ -30,12 +54,12 @@ LANG = {
         "ev_desc": "ตารางแสดงมูลค่าจริงของสลากฯ เมื่อเทียบกับราคาขาย",
         "ev_col_prize": "รางวัล",
         "ev_col_rule": "กติกา",
-        "ev_col_amount": "เงิน(฿)",    # Shortened for mobile
+        "ev_col_amount": "เงิน(฿)",    
         "ev_col_prob": "โอกาส",
-        "ev_col_value": "มูลค่า",      # Shortened for mobile
+        "ev_col_value": "มูลค่า",      
         "ev_conclusion_text": "ราคาขาย 80 บาท แต่มูลค่าทางคณิตศาสตร์เพียง {:.2f} บาท\nทุกใบที่คุณซื้อ คือการขาดทุนทางทฤษฎี {:.2f} บาท",
         # Backtest
-        "bt_title": "⏪ ทดสอบย้อนหลัง (Backtest)",
+        "bt_title": "⏪ ทดสอบย้อนหลัง<br><span style='font-size:0.6em; color:grey'>Historical Backtest</span>",
         "bt_years_label": "ย้อนหลังกี่ปี?",
         "bt_btn": "เริ่มทดสอบ",
         "bt_header_info": "📋 ข้อมูลการทดสอบ",
@@ -55,7 +79,7 @@ LANG = {
         "bt_con_trend": "เลขเด็ดชนะเล็กน้อย (อาจเป็นแค่ดวง)",
         "bt_con_rand": "เลขสุ่มชนะ! การเก็งเลขตามสถิติไม่ได้ช่วยให้ถูกรางวัลมากขึ้น",
         # Simulation
-        "sim_title": "🎲 การจำลอง Monte Carlo",
+        "sim_title": "🎲 การจำลอง Monte Carlo<br><span style='font-size:0.6em; color:grey'>Monte Carlo Simulation</span>",
         "sim_desc": "จำลองเหตุการณ์ในอนาคตด้วยความน่าจะเป็นทางคณิตศาสตร์",
         "sim_btn": "เริ่ม Monte Carlo",
         "sim_narration": "📝 สมมติฐาน: คุณซื้อหวยงวดละ 1 ใบ (80 บาท) ต่อเนื่องเป็นเวลา {} ปี...",
@@ -66,7 +90,7 @@ LANG = {
         "sim_res_win": "💡 ผลลัพธ์: กำไร (คุณโชคดีมาก!)",
         "sim_jackpot": "🤯 แจ็กพอตแตก! (ถูกรางวัลที่ 1)",
         # Validation
-        "val_title": "🧪 การทดสอบทางวิทยาศาสตร์ (Chi-Square)",
+        "val_title": "🧪 การทดสอบทางวิทยาศาสตร์<br><span style='font-size:0.6em; color:grey'>Chi-Square Test</span>",
         "val_desc": "ตรวจสอบว่าการออกรางวัล 'สุ่ม' จริงหรือไม่?",
         "val_res_pass": "✅ ผลลัพธ์: กระจายตัวแบบสุ่ม (Uniform Distribution)",
         "val_exp_pass": "ตัวเลขทางสถิติยืนยันว่าไม่มี 'ล็อคเลข' หรือ 'รูปแบบ' ที่คาดเดาได้",
@@ -82,8 +106,8 @@ LANG = {
         "data_loaded": "💾 数据已加载",
         "data_total_fmt": " (共 {} 期)",
         "data_latest": "最新: ",
-        "tab_trend": "🔥 趋势策略 (追热)",
-        "tab_random": "🧪 随机策略 (防守)",
+        "tab_trend": "🔥 趋势策略 (Trend)",
+        "tab_random": "🧪 随机策略 (Random)",
         "trend_desc": "基于历史出现频率最高的号码推荐",
         "random_desc": "完全数学随机推荐 (承认独立概率)",
         "rec_label_trend": "推荐",
@@ -99,7 +123,7 @@ LANG = {
         "ev_col_value": "贡献价值",
         "ev_conclusion_text": "一张售价 80 THB 的彩票，数学价值仅 {:.2f} THB。\n每买一张，理论亏损 {:.2f} THB。",
         # Backtest
-        "bt_title": "⏪ 历史回测 (Backtest)",
+        "bt_title": "⏪ 历史回测<br><span style='font-size:0.6em; color:grey'>Historical Backtest</span>",
         "bt_years_label": "回测过去多少年数据？",
         "bt_btn": "开始回测",
         "bt_header_info": "📋 回测详情",
@@ -119,7 +143,7 @@ LANG = {
         "bt_con_trend": "趋势策略略微领先 (可能是运气波动)。",
         "bt_con_rand": "随机策略竟然反超了！说明追热号并不总是有效。",
         # Simulation
-        "sim_title": "🎲 蒙特卡洛模拟 (Monte Carlo)",
+        "sim_title": "🎲 蒙特卡洛模拟<br><span style='font-size:0.6em; color:grey'>Monte Carlo Simulation</span>",
         "sim_desc": "基于数学期望的纯概率模拟 (含头奖)",
         "sim_btn": "运行模拟",
         "sim_narration": "📝 模拟假设: 您坚持买彩票 {} 年，每期仅买 1 张 (80 THB)...",
@@ -130,14 +154,14 @@ LANG = {
         "sim_res_win": "💡 点评: 运气不错，小赚一笔！主要是靠运气。",
         "sim_jackpot": "🤯 天呐！中了头奖 (Jackpot)！",
         # Validation
-        "val_title": "🧪 科学有效性检验 (Chi-Square)",
+        "val_title": "🧪 科学有效性检验<br><span style='font-size:0.6em; color:grey'>Chi-Square Test</span>",
         "val_desc": "使用卡方检验 (Chi-Square Test) 验证号码分布是否随机。",
         "val_res_pass": "✅ 结论：分布均匀 (数据是随机的)",
         "val_exp_pass": "P值显示历史数据没有显著偏差。所谓的“热号”只是统计噪音。",
         "val_res_fail": "❌ 结论：发现统计异常",
         # Footer
         "final_rec": "💬 最终建议: 将彩票视为【消费】而非【投资】。",
-        "footer": "🔒 私有部署 | 仅限授权访问"
+        "footer": "🔒 Private Access Only | 888"
     },
     "English": {
         "title": "💰 Thai Lottery Insight",
@@ -194,7 +218,7 @@ LANG = {
         "sim_res_win": "💡 Comment: Lucky!",
         "sim_jackpot": "🤯 JACKPOT HIT!",
         # Validation
-        "val_title": "🧪 Scientific Validation (Chi-Square)",
+        "val_title": "🧪 Scientific Validation<br><span style='font-size:0.6em; color:grey'>Chi-Square Test</span>",
         "val_desc": "Testing for randomness using Chi-Square Goodness of Fit.",
         "val_res_pass": "✅ Result: Uniform Distribution",
         "val_exp_pass": "The data is truly random.",
@@ -205,15 +229,10 @@ LANG = {
     }
 }
 
-# ------------------------------------------------------------
-# 页面配置 (Page Config)
-# ------------------------------------------------------------
-st.set_page_config(page_title="Thai Lottery", page_icon="🎰", layout="centered")
-
+# 语言选择 (Top)
 if "lang_choice" not in st.session_state:
     st.session_state["lang_choice"] = "ภาษาไทย"
 
-# Top language selector
 c1, c2 = st.columns([3, 1])
 with c2:
     options = ["ภาษาไทย", "中文", "English"]
@@ -247,13 +266,14 @@ if not check_password():
     st.stop()
 
 # ------------------------------------------------------------
-# 主标题
+# 主标题 (Main Title adjusted for Mobile)
 # ------------------------------------------------------------
+# 字体大小减小到 1.8em 以适应单行显示
 st.markdown(f"""
-    <h1 style='text-align: center; color: #E63946; font-size: 2.2em;'>
+    <h1 style='text-align: center; color: #E63946; font-size: 1.8em; margin-bottom: 0px;'>
         {T['title']}
     </h1>
-    <hr style='margin-top: 0; margin-bottom: 25px;'>
+    <hr style='margin-top: 5px; margin-bottom: 20px;'>
 """, unsafe_allow_html=True)
 
 # 读取数据
@@ -273,12 +293,11 @@ def load_data():
     return df
 
 df = load_data()
-
 if df.empty:
     st.error("No Data Found.")
     st.stop()
 
-# 数据加载显示 (本地化)
+# 数据加载显示
 total_str = T["data_total_fmt"].format(len(df))
 st.success(f"{T['data_loaded']}{total_str}")
 st.text(f"{T['data_latest']} {df.iloc[0]['date']}")
@@ -358,7 +377,8 @@ st.info(T["ev_conclusion_text"].format(total_ev, loss))
 # 3. 详细历史回测 (Detailed Backtest)
 # -----------------------------------------------
 st.divider()
-st.subheader(T["bt_title"])
+# 使用 markdown 替代 subheader 以支持 HTML (分行)
+st.markdown(f"### {T['bt_title']}", unsafe_allow_html=True)
 
 years_back = st.slider(T["bt_years_label"], 1, 10, 5)
 
@@ -369,7 +389,6 @@ if st.button(T["bt_btn"]):
         start_date = latest_date - pd.DateOffset(years=years_back)
         test_set = chron_data[chron_data['date_obj'] >= start_date]
         
-        # Display Info
         st.markdown(f"**{T['bt_header_info']}**")
         st.text(T["bt_info_range"].format(start_date.strftime('%Y-%m-%d'), latest_date.strftime('%Y-%m-%d')) + "\n" +
                 T["bt_info_count"].format(len(test_set)) + "\n" +
@@ -383,13 +402,11 @@ if st.button(T["bt_btn"]):
             target = str(row['prize_2digits']).strip().zfill(2)
             vals = [str(r['prize_2digits']).strip().zfill(2) for _, r in current_pool.iterrows()]
             vals = [v for v in vals if v.lower() != 'nan']
-            
             if vals:
                 c = collections.Counter(vals)
                 picks_t = random.choices(list(c.keys()), weights=list(c.values()), k=3)
             else:
                 picks_t = [f"{random.randint(0,99):02d}" for _ in range(3)]
-                
             picks_r = [f"{random.randint(0,99):02d}" for _ in range(3)]
             
             results["Trend"]["cost"] += 240
@@ -400,13 +417,11 @@ if st.button(T["bt_btn"]):
             if target in picks_r: 
                 results["Random"]["win"] += 2000
                 results["Random"]["hits"] += 1
-            
             current_pool = pd.concat([current_pool, pd.DataFrame([row])])
             
         def show_stats(name, res):
             net = res["win"] - res["cost"]
             roi = (net / res["cost"]) * 100 if res["cost"] > 0 else 0
-            
             st.markdown(f"##### {name}")
             c1, c2 = st.columns(2)
             c1.write(f"- {T['bt_lbl_hits']} **{res['hits']} / {len(test_set)}**")
@@ -429,20 +444,18 @@ if st.button(T["bt_btn"]):
 # 4. Monte Carlo Simulation
 # -----------------------------------------------
 st.divider()
-st.subheader(T["sim_title"])
+st.markdown(f"### {T['sim_title']}", unsafe_allow_html=True)
 st.markdown(T["sim_desc"])
 
 if st.button(T["sim_btn"]):
     years_mc = 5
     st.markdown(T["sim_narration"].format(years_mc))
-    
     simulations = int(120 * (years_mc/5) * 5)
     
     ticket_price = 80
     total_cost = 0
     total_win = 0
     jackpot_hit = False
-    
     progress_bar = st.progress(0)
     
     for i in range(simulations):
@@ -458,7 +471,6 @@ if st.button(T["sim_btn"]):
         progress_bar.progress((i + 1) / simulations)
         
     net_profit = total_win - total_cost
-    
     c1, c2, c3 = st.columns(3)
     c1.metric(T["sim_lbl_cost"], f"{total_cost}")
     c2.metric(T["sim_lbl_return"], f"{total_win}")
@@ -476,7 +488,7 @@ if st.button(T["sim_btn"]):
 # 5. Scientific Validation (Chi-Square)
 # -----------------------------------------------
 st.divider()
-st.subheader(T["val_title"])
+st.markdown(f"### {T['val_title']}", unsafe_allow_html=True)
 st.markdown(T["val_desc"])
 
 observed_counts = collections.Counter(all_2digits)
