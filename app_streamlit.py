@@ -16,7 +16,7 @@ st.set_page_config(page_title="Thai Lottery", page_icon="💰", layout="centered
 st.markdown("""
     <style>
         .block-container {
-            padding-top: 1.5rem !important;
+            padding-top: 2.5rem !important; /* 增加一点，防止语言栏被遮挡 */
             padding-bottom: 2rem !important;
         }
         #MainMenu {visibility: hidden;}
@@ -31,7 +31,7 @@ st.markdown("""
             margin-bottom: 0;
         }
         .section-sub {
-            font-size: 0.9em; /* 稍微调大 */
+            font-size: 0.9em;
             color: #666;
             margin-top: -5px;
             margin-bottom: 15px;
@@ -43,7 +43,6 @@ st.markdown("""
 # ------------------------------------------------------------
 # 🌍 多语言配置 / Multi-language Config
 # ------------------------------------------------------------
-# 使用 HTML 标签 <br> 和 <span> 来美化标题的分行显示
 LANG = {
     "ภาษาไทย": {
         "title": "💰 วิเคราะห์หวยไทย (AI)",
@@ -64,7 +63,7 @@ LANG = {
         "ev_desc": "ตารางแสดงมูลค่าจริงของสลากฯ เมื่อเทียบกับราคาขาย",
         "ev_col_prize": "รางวัล",
         "ev_col_rule": "กติกา",
-        "ev_col_amount": "เงินรางวัล",  # Revert to 'Prize Money'
+        "ev_col_amount": "เงิน",  # 极致缩短: Money
         "ev_col_prob": "โอกาส",
         "ev_col_value": "มูลค่า",      
         "ev_conclusion_text": "ราคาขาย 80 บาท แต่มูลค่าทางคณิตศาสตร์เพียง {:.2f} บาท\nทุกใบที่คุณซื้อ คือการขาดทุนทางทฤษฎี {:.2f} บาท",
@@ -364,7 +363,9 @@ if st.session_state["lang_choice"] == "中文":
     p_names = ["一等奖", "二等奖", "三等奖", "四等奖", "五等奖", "邻近奖", "前/后三", "末两位"]
     p_rules = ["6位全中", "6位", "6位", "6位", "6位", "头奖±1", "前3或后3", "末2位"]
 elif st.session_state["lang_choice"] == "ภาษาไทย":
-    p_names = ["รางวัลที่ 1", "รางวัลที่ 2", "รางวัลที่ 3", "รางวัลที่ 4", "รางวัลที่ 5", "ข้างเคียง", "3 ตัวหน้า/หลัง", "2 ตัวท้าย"]
+    p_names = ["รางวัลที่ 1", "รางวัลที่ 2", "รางวัลที่ 3", "รางวัลที่ 4", "รางวัลที่ 5", "ข้างเคียง", "3 ตัวหน้า/หลัง", "2 ตัวท้าย"] # 这个字段很长，单独改
+    # 极简修改:
+    p_names[6] = "3ตัวน/ล" # 前/后三 
     p_rules = ["ตรงทุกตัว", "6 หลัก", "6 หลัก", "6 หลัก", "6 หลัก", "ใกล้เคียง", "3 ตัว", "2 ตัว"]
 else:
     p_names = ["1st Prize", "2nd Prize", "3rd Prize", "4th Prize", "5th Prize", "Side Prize", "3 Digits", "2 Digits"]
@@ -378,9 +379,6 @@ data_ev = {
 }
 df_ev = pd.DataFrame(data_ev)
 df_ev[T["ev_col_value"]] = df_ev[T["ev_col_amount"]] * (df_ev[T["ev_col_prob"]] / 1000000)
-
-# 移除千分位并去掉所有小数位 (1/1000000 而不是 1/1,000,000)
-# 以节省宽度
 df_ev[T["ev_col_prob"]] = df_ev[T["ev_col_prob"]].apply(lambda x: f"1/{int(1000000/x)}") 
 
 # 展示
@@ -398,7 +396,6 @@ st.info(T["ev_conclusion_text"].format(total_ev, loss))
 # 3. 详细历史回测 (Detailed Backtest)
 # -----------------------------------------------
 st.divider()
-# 自定义双行标题
 st.markdown(f"""
     <div class='section-header'>{T['bt_title_main']}</div>
     <div class='section-sub'>{T['bt_title_sub']}</div>
