@@ -41,8 +41,8 @@ LANG = {
         "bt_info_range": "ช่วงเวลา: {} ถึง {}",
         "bt_info_count": "จำนวนงวด: {} งวด",
         "bt_info_cost": "ทุน: ซื้อ 3 ชุด/งวด (ชุดละ 80 บาท)",
-        "bt_strat_trend": "🔥 กลยุทธ์เลขเด็ด (Trend)",
-        "bt_strat_rand": "🧪 กลยุทธ์สุ่ม (Random)",
+        "bt_strat_trend": "🔥 กลยุทธ์เลขเด็ด",  # Removed (Trend)
+        "bt_strat_rand": "🧪 กลยุทธ์สุ่ม",     # Removed (Random)
         "bt_col_hits": "ถูกรางวัล",
         "bt_col_invest": "เงินลงทุน",
         "bt_col_return": "เงินรางวัล",
@@ -53,10 +53,13 @@ LANG = {
         "bt_con_trend": "กลยุทธ์เลขเด็ดทำได้ดีกว่าเล็กน้อย (อาจเป็นเพียงความบังเอิญ)",
         "bt_con_rand": "กลยุทธ์สุ่มทำได้ดีกว่า! แสดงว่าการเก็งเลขไม่ได้ผลเสมอไป",
         # Simulation
-        "sim_title": "💰 จำลองความน่าจะเป็น (Monte Carlo)",
+        "sim_title": "💰 Monte Carlo Simulation", # Keep English name
         "sim_desc": "จำลองการซื้อหวยด้วยความน่าจะเป็นทางคณิตศาสตร์ (รวมรางวัลที่ 1)",
-        "sim_btn": "เริ่มจำลอง",
+        "sim_btn": "เริ่ม Monte Carlo",
         "sim_result_label": "ผลลัพธ์จำลอง 5 ปี (ซื้อ 1 ใบ/งวด)",
+        "sim_total_cost": "ต้นทุนรวม",     # Fixed Key
+        "sim_total_return": "เงินรางวัลรวม", # Fixed Key
+        "sim_net": "กำไร/ขาดทุน",          # Fixed Key
         "sim_comment_loss": "💡 ความเห็น: ขาดทุนตามคาด การพนันมีความเสี่ยง",
         "sim_comment_win": "💡 ความเห็น: โชคดีมาก! (แต่เกิดขึ้นยาก)",
         "footer": "🔒 Private Access Only | 888"
@@ -92,22 +95,25 @@ LANG = {
         "bt_info_range": "回测区间: {} 至 {}",
         "bt_info_count": "回测期数: {} 期",
         "bt_info_cost": "策略设定: 每期购买 3 注 2位数号码 (成本 240 THB)",
-        "bt_strat_trend": "🔥 趋势策略 (Trend)",
-        "bt_strat_rand": "🧪 随机策略 (Random)",
-        "bt_col_hits": "中奖次数",
-        "bt_col_invest": "总投入",
-        "bt_col_return": "总回报",
+        "bt_strat_trend": "🔥 趋势策略", # Removed (Trend)
+        "bt_strat_rand": "🧪 随机策略",  # Removed (Random)
+        "bt_col_hits": "中奖",
+        "bt_col_invest": "投入",
+        "bt_col_return": "回报",
         "bt_col_net": "净盈亏",
-        "bt_col_roi": "回报率 (ROI)",
+        "bt_col_roi": "回报率(ROI)",
         "bt_conclusion": "🧐 回测结论",
         "bt_con_equal": "两种策略表现几乎一致！这再次验证了彩票的随机游走性质。",
         "bt_con_trend": "趋势策略略微领先，但这可能仅仅是运气波动。",
         "bt_con_rand": "随机策略竟然反超了！说明追热号并不总是有效。",
         # Simulation
-        "sim_title": "💰 纯概率模拟 (含头奖)",
+        "sim_title": "💰 Monte Carlo Simulation", # Keep English name
         "sim_desc": "基于数学期望的 Monte Carlo 模拟，包含从一等奖到小奖的所有概率。",
-        "sim_btn": "运行概率模拟",
+        "sim_btn": "运行 Monte Carlo",
         "sim_result_label": "模拟结果 (每期买1张，持续5年)",
+        "sim_total_cost": "总投入",         # Fixed Key
+        "sim_total_return": "总回报",       # Fixed Key
+        "sim_net": "净盈亏",              # Fixed Key
         "sim_comment_loss": "💡 点评: 长期参与大概率是亏损的，请保持娱乐心态。",
         "sim_comment_win": "💡 点评: 运气不错，小赚一笔！主要是靠运气。",
         "footer": "🔒 私有部署 | 仅限授权访问"
@@ -157,8 +163,11 @@ LANG = {
         # Simulation
         "sim_title": "💰 Monte Carlo Simulation",
         "sim_desc": "Pure probability simulation including Jackpot chances.",
-        "sim_btn": "Run Simulation",
+        "sim_btn": "Run Monte Carlo",
         "sim_result_label": "Simulation (1 ticket/draw for 5 years)",
+        "sim_total_cost": "Total Cost",      # Fixed Key
+        "sim_total_return": "Total Return",  # Fixed Key
+        "sim_net": "Net Profit",           # Fixed Key
         "sim_comment_loss": "💡 Comment: Long term loss is expected.",
         "sim_comment_win": "💡 Comment: Super Lucky! But rare.",
         "footer": "🔒 Private Access Only"
@@ -314,101 +323,76 @@ st.subheader(T["bt_title"])
 years_back = st.slider(T["bt_years_label"], 1, 10, 5)
 
 if st.button(T["bt_btn"]):
-    with st.spinner("Simulating... / กำลังคำนวณ..."):
-        # Prepare data (Oldest to Newest)
+    with st.spinner("Calculating..."):
+        # ... (Data prep code same as before, condensed for brevity) ...
         chron_data = df.sort_values('date_obj', ascending=True)
         latest_date = chron_data.iloc[-1]['date_obj']
         start_date = latest_date - pd.DateOffset(years=years_back)
-        
         test_set = chron_data[chron_data['date_obj'] >= start_date]
         
         st.write(T["bt_info_range"].format(start_date.strftime('%Y-%m-%d'), latest_date.strftime('%Y-%m-%d')))
         st.write(T["bt_info_count"].format(len(test_set)))
         st.caption(T["bt_info_cost"])
         
-        results = {
-            "Trend": {"cost": 0, "win": 0, "hits": 0},
-            "Random": {"cost": 0, "win": 0, "hits": 0}
-        }
+        results = {"Trend": {"cost": 0, "win": 0}, "Random": {"cost": 0, "win": 0}}
+        current_pool = chron_data[chron_data['date_obj'] < start_date].copy()
         
-        # Simulate logic (Same as CLI)
-        current_data_pool = chron_data[chron_data['date_obj'] < start_date].copy()
         for idx, row in test_set.iterrows():
-            target_val = str(row['prize_2digits']).strip()
-            if len(target_val) == 1: target_val = "0" + target_val
+            target = str(row['prize_2digits']).strip().zfill(2)
+            # Pool logic
+            vals = [str(r['prize_2digits']).strip().zfill(2) for _, r in current_pool.iterrows()]
+            vals = [v for v in vals if v.lower() != 'nan']
             
-            # Update history pool (Add previous draw)
-            # Actually for rolling, we need data available BEFORE this draw
-            # For simplicity, we assume we update pool dynamically
-            
-            # 1. Calc Trend
-            pool_vals = []
-            for _, r in current_data_pool.iterrows():
-                v = str(r['prize_2digits']).strip()
-                if len(v) == 1: v = "0" + v
-                if v and v.lower() != 'nan': pool_vals.append(v)
-            
-            if pool_vals:
-                ctr = collections.Counter(pool_vals)
-                picks_trend = random.choices(list(ctr.keys()), weights=list(ctr.values()), k=3)
+            if vals:
+                c = collections.Counter(vals)
+                picks_t = random.choices(list(c.keys()), weights=list(c.values()), k=3)
             else:
-                picks_trend = [f"{random.randint(0,99):02d}" for _ in range(3)]
+                picks_t = [f"{random.randint(0,99):02d}" for _ in range(3)]
+                
+            picks_r = [f"{random.randint(0,99):02d}" for _ in range(3)]
             
-            picks_rand = [f"{random.randint(0,99):02d}" for _ in range(3)]
+            # Cost & Win
+            results["Trend"]["cost"] += 240
+            results["Random"]["cost"] += 240
+            if target in picks_t: results["Trend"]["win"] += 2000
+            if target in picks_r: results["Random"]["win"] += 2000
             
-            # Check Win
-            cost_per_draw = 240 # 3 tickets * 80
-            results["Trend"]["cost"] += cost_per_draw
-            results["Random"]["cost"] += cost_per_draw
+            current_pool = pd.concat([current_pool, pd.DataFrame([row])])
             
-            if target_val in picks_trend:
-                results["Trend"]["win"] += 2000
-                results["Trend"]["hits"] += 1
-            if target_val in picks_rand:
-                results["Random"]["win"] += 2000
-                results["Random"]["hits"] += 1
-            
-            # Add current draw to pool for NEXT round
-            current_data_pool = pd.concat([current_data_pool, pd.DataFrame([row])])
+        # --- 优化后的手机端展示 (Mobile Friendly View) ---
+        # 使用 Metrics 而不是 Table，防止挤压
+        
+        st.markdown(f"### {T['bt_strat_trend']}")
+        c1, c2, c3 = st.columns(3)
+        res_t = results["Trend"]
+        net_t = res_t["win"] - res_t["cost"]
+        roi_t = (net_t / res_t["cost"]) * 100 if res_t["cost"] > 0 else 0
+        c1.metric(T["bt_col_net"], f"{net_t:,}", delta=net_t)
+        c2.metric(T["bt_col_roi"], f"{roi_t:.1f}%")
+        c3.metric(T["bt_col_return"], f"{res_t['win']:,}")
 
-        # Show Results Table
-        res_data = []
-        for strat, name in [("Trend", T["bt_strat_trend"]), ("Random", T["bt_strat_rand"])]:
-            r = results[strat]
-            net = r["win"] - r["cost"]
-            roi = (net / r["cost"]) * 100 if r["cost"] > 0 else 0
-            res_data.append({
-                "Strategy": name,
-                T["bt_col_hits"]: f"{r['hits']} / {len(test_set)}",
-                T["bt_col_invest"]: f"{r['cost']:,}",
-                T["bt_col_return"]: f"{r['win']:,}",
-                T["bt_col_net"]: f"{net:,}",
-                T["bt_col_roi"]: f"{roi:.2f}%"
-            })
-        
-        st.table(pd.DataFrame(res_data).set_index("Strategy"))
-        
-        # Conclusion
-        diff = results["Trend"]["hits"] - results["Random"]["hits"]
-        st.subheader(T["bt_conclusion"])
-        if abs(diff) <= 2:
-            st.info(T["bt_con_equal"])
-        elif diff > 0:
-            st.warning(T["bt_con_trend"])
-        else:
-            st.error(T["bt_con_rand"])
+        st.markdown(f"### {T['bt_strat_rand']}")
+        c1, c2, c3 = st.columns(3)
+        res_r = results["Random"]
+        net_r = res_r["win"] - res_r["cost"]
+        roi_r = (net_r / res_r["cost"]) * 100 if res_r["cost"] > 0 else 0
+        c1.metric(T["bt_col_net"], f"{net_r:,}", delta=net_r)
+        c2.metric(T["bt_col_roi"], f"{roi_r:.1f}%")
+        c3.metric(T["bt_col_return"], f"{res_r['win']:,}")
+
+        st.caption("Net Profit / ROI / Total Return")
 
 # -----------------------------------------------
-# 4. 纯概率模拟 (Monte Carlo with Jackpot)
+# 4. Monte Carlo Simulation
 # -----------------------------------------------
 st.divider()
-st.subheader(T["sim_title"])
+st.subheader(T["sim_title"]) # 已改为 Monte Carlo Simulation (English key)
 st.markdown(T["sim_desc"])
 
 if st.button(T["sim_btn"]):
     st.write(T["sim_result_label"])
     
-    simulations = 120 # 5 years
+    simulations = 120 
     ticket_price = 80
     total_cost = 0
     total_win = 0
@@ -418,28 +402,23 @@ if st.button(T["sim_btn"]):
     
     for i in range(simulations):
         total_cost += ticket_price
-        # Check prizes independently
         current_win = 0
-        # 2 Digits (1/100)
         if random.random() < 0.01: current_win += 2000
-        # 3 Digits (4/1000)
         if random.random() < 0.004: current_win += 4000
-        # Jackpot (1/1M)
         if random.random() < 0.000001: 
             current_win += 6000000
             jackpot_hit = True
-        # Small prizes approx
-        if random.random() < 0.00016: current_win += 20000 # Approx avg
-            
+        if random.random() < 0.00016: current_win += 20000
         total_win += current_win
         progress_bar.progress((i + 1) / simulations)
         
     net_profit = total_win - total_cost
     
+    # 修复 Key Error：使用修正后的 Key
     c1, c2, c3 = st.columns(3)
-    c1.metric(T["sim_total_cost"], f"{total_cost} THB")
-    c2.metric(T["sim_total_return"], f"{total_win} THB")
-    c3.metric(T["sim_net"], f"{net_profit} THB", delta=net_profit)
+    c1.metric(T["sim_total_cost"], f"{total_cost}")
+    c2.metric(T["sim_total_return"], f"{total_win}")
+    c3.metric(T["sim_net"], f"{net_profit}", delta=net_profit)
     
     if jackpot_hit:
         st.balloons()
