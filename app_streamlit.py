@@ -137,7 +137,7 @@ T = LANG[st.session_state["lang_choice"]]
 # ------------------------------------------------------------
 def check_password():
     def password_entered():
-        if st.session_state["password"] == "888":
+        if st.session_state["password"] == "8888":
             st.session_state["password_correct"] = True
             del st.session_state["password"]
         else:
