@@ -29,9 +29,9 @@ LANG = {
         "ev_desc": "ตารางแสดงมูลค่าจริงของสลากฯ เมื่อเทียบกับราคาขาย",
         "ev_col_prize": "รางวัล",
         "ev_col_rule": "กติกา",
-        "ev_col_amount": "เงิน(บาท)", # Shortened
+        "ev_col_amount": "เงิน(฿)",   # Shortened Amount
         "ev_col_prob": "โอกาส",
-        "ev_col_value": "มูลค่า",     # Shortened
+        "ev_col_value": "มูลค่า",     # Shortened Value
         "ev_conclusion": "💡 บทสรุป",
         "ev_conclusion_text": "ราคาขาย 80 บาท แต่มูลค่าทางคณิตศาสตร์เพียง {:.2f} บาท\nทุกใบที่คุณซื้อ คือการขาดทุนทางทฤษฎี {:.2f} บาท",
         # Backtest
@@ -247,12 +247,26 @@ if not check_password():
     st.stop()
 
 # ------------------------------------------------------------
-# 主标题
+# 主标题 (Main Title with Styling)
 # ------------------------------------------------------------
-st.title(T["title"])
+st.markdown(f"""
+    <h1 style='text-align: center; color: #E63946; font-size: 2.2em;'>
+        {T['title']}
+    </h1>
+    <hr style='margin-top: 0; margin-bottom: 25px;'>
+""", unsafe_allow_html=True)
 
 # 读取数据
 @st.cache_data
+# ... 
+# ... (Skip unchanged lines)
+# ...
+# 展示 (包含 Rule 列)
+st.dataframe(
+    df_ev[[T["ev_col_prize"], T["ev_col_rule"], T["ev_col_amount"], T["ev_col_prob"], T["ev_col_value"]]], 
+    hide_index=True,
+    use_container_width=True
+)
 def load_data():
     if not os.path.exists("historical_data.csv"):
         return pd.DataFrame()
@@ -338,9 +352,9 @@ data_ev = {
 df_ev = pd.DataFrame(data_ev)
 df_ev[T["ev_col_value"]] = df_ev[T["ev_col_amount"]] * (df_ev[T["ev_col_prob"]] / 1000000)
 df_ev[T["ev_col_prob"]] = df_ev[T["ev_col_prob"]].apply(lambda x: f"1/{int(1000000/x):,}")
-# 展示 (移除 Rule 列以适应手机窄屏)
+# 展示
 st.dataframe(
-    df_ev[[T["ev_col_prize"], T["ev_col_amount"], T["ev_col_prob"], T["ev_col_value"]]], 
+    df_ev[[T["ev_col_prize"], T["ev_col_rule"], T["ev_col_amount"], T["ev_col_prob"], T["ev_col_value"]]], 
     hide_index=True,
     use_container_width=True
 )
