@@ -5,6 +5,7 @@ import random
 import collections
 import os
 import scipy.stats as stats
+import datetime
 
 # ------------------------------------------------------------
 # 🌍 多语言配置 / Multi-language Config
@@ -29,10 +30,9 @@ LANG = {
         "ev_desc": "ตารางแสดงมูลค่าจริงของสลากฯ เมื่อเทียบกับราคาขาย",
         "ev_col_prize": "รางวัล",
         "ev_col_rule": "กติกา",
-        "ev_col_amount": "เงิน(฿)",   # Shortened Amount
+        "ev_col_amount": "เงิน(฿)",    # Shortened for mobile
         "ev_col_prob": "โอกาส",
-        "ev_col_value": "มูลค่า",     # Shortened Value
-        "ev_conclusion": "💡 บทสรุป",
+        "ev_col_value": "มูลค่า",      # Shortened for mobile
         "ev_conclusion_text": "ราคาขาย 80 บาท แต่มูลค่าทางคณิตศาสตร์เพียง {:.2f} บาท\nทุกใบที่คุณซื้อ คือการขาดทุนทางทฤษฎี {:.2f} บาท",
         # Backtest
         "bt_title": "⏪ ทดสอบย้อนหลัง (Backtest)",
@@ -247,7 +247,7 @@ if not check_password():
     st.stop()
 
 # ------------------------------------------------------------
-# 主标题 (Main Title with Styling)
+# 主标题
 # ------------------------------------------------------------
 st.markdown(f"""
     <h1 style='text-align: center; color: #E63946; font-size: 2.2em;'>
@@ -258,15 +258,6 @@ st.markdown(f"""
 
 # 读取数据
 @st.cache_data
-# ... 
-# ... (Skip unchanged lines)
-# ...
-# 展示 (包含 Rule 列)
-st.dataframe(
-    df_ev[[T["ev_col_prize"], T["ev_col_rule"], T["ev_col_amount"], T["ev_col_prob"], T["ev_col_value"]]], 
-    hide_index=True,
-    use_container_width=True
-)
 def load_data():
     if not os.path.exists("historical_data.csv"):
         return pd.DataFrame()
@@ -278,7 +269,6 @@ def load_data():
             except: return pd.NaT
     df['date_obj'] = df['date'].apply(parse_dt)
     df = df.sort_values('date_obj', ascending=False)
-    # Ensure proper reset index for iteration later
     df = df.reset_index(drop=True)
     return df
 
@@ -345,13 +335,14 @@ else:
 
 data_ev = {
     T["ev_col_prize"]: p_names,
+    T["ev_col_rule"]: p_rules,
     T["ev_col_amount"]: [6000000, 200000, 80000, 40000, 20000, 100000, 4000, 2000],
     T["ev_col_prob"]: [1, 5, 10, 50, 100, 2, 4000, 10000], 
-    T["ev_col_rule"]: p_rules
 }
 df_ev = pd.DataFrame(data_ev)
 df_ev[T["ev_col_value"]] = df_ev[T["ev_col_amount"]] * (df_ev[T["ev_col_prob"]] / 1000000)
 df_ev[T["ev_col_prob"]] = df_ev[T["ev_col_prob"]].apply(lambda x: f"1/{int(1000000/x):,}")
+
 # 展示
 st.dataframe(
     df_ev[[T["ev_col_prize"], T["ev_col_rule"], T["ev_col_amount"], T["ev_col_prob"], T["ev_col_value"]]], 
@@ -378,7 +369,7 @@ if st.button(T["bt_btn"]):
         start_date = latest_date - pd.DateOffset(years=years_back)
         test_set = chron_data[chron_data['date_obj'] >= start_date]
         
-        # --- Context Info (Like CLI) ---
+        # Display Info
         st.markdown(f"**{T['bt_header_info']}**")
         st.text(T["bt_info_range"].format(start_date.strftime('%Y-%m-%d'), latest_date.strftime('%Y-%m-%d')) + "\n" +
                 T["bt_info_count"].format(len(test_set)) + "\n" +
@@ -412,27 +403,22 @@ if st.button(T["bt_btn"]):
             
             current_pool = pd.concat([current_pool, pd.DataFrame([row])])
             
-        # --- Results Display (Detailed) ---
-        
-        # Helper to display strategy stats
         def show_stats(name, res):
             net = res["win"] - res["cost"]
             roi = (net / res["cost"]) * 100 if res["cost"] > 0 else 0
             
             st.markdown(f"##### {name}")
-            # Use columns for layout
             c1, c2 = st.columns(2)
             c1.write(f"- {T['bt_lbl_hits']} **{res['hits']} / {len(test_set)}**")
             c1.write(f"- {T['bt_lbl_invest']} {res['cost']:,}")
             c2.write(f"- {T['bt_lbl_return']} {res['win']:,}")
-            c2.metric(T["bt_lbl_net"], f"{net:,} THB", delta=net) # Metric for visual impact
+            c2.metric(T["bt_lbl_net"], f"{net:,} THB", delta=net)
             st.write(f"- {T['bt_lbl_roi']} **{roi:.2f}%**")
             st.divider()
 
         show_stats(T["bt_strat_trend"], results["Trend"])
         show_stats(T["bt_strat_rand"], results["Random"])
         
-        # Conclusion
         st.markdown(f"**{T['bt_comparison']}**")
         diff = results["Trend"]["hits"] - results["Random"]["hits"]
         if abs(diff) <= 1: st.info(T["bt_con_equal"])
@@ -447,11 +433,10 @@ st.subheader(T["sim_title"])
 st.markdown(T["sim_desc"])
 
 if st.button(T["sim_btn"]):
-    years_mc = 5 # Fixed as per prompt or user previous behavior prefer 5
+    years_mc = 5
     st.markdown(T["sim_narration"].format(years_mc))
     
-    simulations = 120 * (years_mc/5) * 5 # Approx 120 draws for 5 years
-    simulations = int(simulations)
+    simulations = int(120 * (years_mc/5) * 5)
     
     ticket_price = 80
     total_cost = 0
@@ -488,15 +473,13 @@ if st.button(T["sim_btn"]):
         st.warning(T["sim_res_loss"])
 
 # -----------------------------------------------
-# 5. Scientific Validation (Chi-Square) - Moved Here
+# 5. Scientific Validation (Chi-Square)
 # -----------------------------------------------
 st.divider()
 st.subheader(T["val_title"])
 st.markdown(T["val_desc"])
 
-# Perform Calc
 observed_counts = collections.Counter(all_2digits)
-# Fill missing
 for i in range(100):
     k = f"{i:02d}"
     if k not in observed_counts: observed_counts[k] = 0
