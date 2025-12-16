@@ -378,16 +378,45 @@ counter_3 = collections.Counter(all_3digits)
 st.divider()
 tab1, tab2 = st.tabs([T["tab_trend"], T["tab_random"]])
 
-# Helper function to display parallel columns
+# Helper function to display parallel columns using HTML to force side-by-side on mobile
 def show_picker_grid(strategy="Trend"):
-    # Header Row
-    h1, h2 = st.columns(2)
-    with h1:
-        st.markdown(f"<div class='digit-title'>{T['col_2d_title']}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='prob-label'>{T['prob_2d']}</div>", unsafe_allow_html=True)
-    with h2:
-        st.markdown(f"<div class='digit-title'>{T['col_3d_title']}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='prob-label'>{T['prob_3d']}</div>", unsafe_allow_html=True)
+    # Custom CSS for the grid
+    st.markdown("""
+    <style>
+        .custom-grid-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .custom-metric-card {
+            width: 48%; /* Force 50% width approx */
+            background-color: #f9f9f9; /* Light grey bg similar to st */
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            text-align: left;
+        }
+        .metric-label { font-size: 0.8em; color: #666; margin-bottom: 2px; }
+        .metric-value { font-size: 1.8em; font-weight: 700; color: #333; line-height: 1.2; }
+        .metric-delta { font-size: 0.8em; color: #28a745; font-weight: 500; }
+        .grid-header { font-size: 1.0em; font-weight: 600; color: #333; }
+        .grid-sub { font-size: 0.75em; color: #888; font-weight: 400; margin-bottom: 8px; }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Grid Header HTML
+    st.markdown(f"""
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <div style="width:48%">
+            <div class="grid-header">{T['col_2d_title']}</div>
+            <div class="grid-sub">{T['prob_2d']}</div>
+        </div>
+        <div style="width:48%">
+            <div class="grid-header">{T['col_3d_title']}</div>
+            <div class="grid-sub">{T['prob_3d']}</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Logic
     picks_2 = []
@@ -407,39 +436,42 @@ def show_picker_grid(strategy="Trend"):
         counts_2 = [counter_2[p] for p in picks_2]
         counts_3 = [counter_3[p] for p in picks_3]
         
-        # Row 1
-        r1c1, r1c2 = st.columns(2)
-        r1c1.metric(T["rec_label_trend"].format(1), picks_2[0], delta=T["reason"].format(counts_2[0]))
-        r1c2.metric(T["rec_label_trend"].format(1), picks_3[0], delta=T["reason"].format(counts_3[0]))
-        
-        # Row 2
-        r2c1, r2c2 = st.columns(2)
-        r2c1.metric(T["rec_label_trend"].format(2), picks_2[1], delta=T["reason"].format(counts_2[1]))
-        r2c2.metric(T["rec_label_trend"].format(2), picks_3[1], delta=T["reason"].format(counts_3[1]))
-        
-        # Row 3
-        r3c1, r3c2 = st.columns(2)
-        r3c1.metric(T["rec_label_trend"].format(3), picks_2[2], delta=T["reason"].format(counts_2[2]))
-        r3c2.metric(T["rec_label_trend"].format(3), picks_3[2], delta=T["reason"].format(counts_3[2]))
+        for i in range(3):
+            # Render Row via HTML
+            html = f"""
+            <div class="custom-grid-container">
+                <div class="custom-metric-card">
+                    <div class="metric-label">{T['rec_label_trend'].format(i+1)}</div>
+                    <div class="metric-value">{picks_2[i]}</div>
+                    <div class="metric-delta">↑ {T['reason'].format(counts_2[i])}</div>
+                </div>
+                <div class="custom-metric-card">
+                    <div class="metric-label">{T['rec_label_trend'].format(i+1)}</div>
+                    <div class="metric-value">{picks_3[i]}</div>
+                    <div class="metric-delta">↑ {T['reason'].format(counts_3[i])}</div>
+                </div>
+            </div>
+            """
+            st.markdown(html, unsafe_allow_html=True)
 
     else: # Random
         picks_2 = [f"{random.randint(0,99):02d}" for _ in range(3)]
         picks_3 = [f"{random.randint(0,999):03d}" for _ in range(3)]
         
-        # Row 1
-        r1c1, r1c2 = st.columns(2)
-        r1c1.metric(T["rec_label_radom"].format(1), picks_2[0])
-        r1c2.metric(T["rec_label_radom"].format(1), picks_3[0])
-        
-        # Row 2
-        r2c1, r2c2 = st.columns(2)
-        r2c1.metric(T["rec_label_radom"].format(2), picks_2[1])
-        r2c2.metric(T["rec_label_radom"].format(2), picks_3[1])
-        
-        # Row 3
-        r3c1, r3c2 = st.columns(2)
-        r3c1.metric(T["rec_label_radom"].format(3), picks_2[2])
-        r3c2.metric(T["rec_label_radom"].format(3), picks_3[2])
+        for i in range(3):
+            html = f"""
+            <div class="custom-grid-container">
+                <div class="custom-metric-card">
+                    <div class="metric-label">{T['rec_label_radom'].format(i+1)}</div>
+                    <div class="metric-value">{picks_2[i]}</div>
+                </div>
+                <div class="custom-metric-card">
+                    <div class="metric-label">{T['rec_label_radom'].format(i+1)}</div>
+                    <div class="metric-value">{picks_3[i]}</div>
+                </div>
+            </div>
+            """
+            st.markdown(html, unsafe_allow_html=True)
 
 
 with tab1:
