@@ -6,6 +6,7 @@ import collections
 import os
 import scipy.stats as stats
 import datetime
+import ast # 用于解析 ['123', '456'] 格式的字符串
 
 # ------------------------------------------------------------
 # 🎨 界面样式优化 (CSS)
@@ -56,30 +57,30 @@ st.markdown("""
         .grid-header { font-size: 1.0em; font-weight: 600; color: #333; }
         .grid-sub { font-size: 0.75em; color: #888; font-weight: 400; margin-bottom: 8px; }
         
-        /* 净盈亏 样式 (Backtest) - 较小，内敛 */
+        /* 净盈亏 样式 (Backtest) */
         .net-profit-box-bt {
             padding: 5px 0px;
         }
         .net-profit-label-bt { font-size: 0.85em; color: #666; }
         .net-profit-value-bt { font-size: 1.2em; font-weight: 700; }
         
-        /* 净盈亏 样式 (Monte Carlo) - 大号，匹配 st.metric */
+        /* 净盈亏 样式 (Monte Carlo) */
         .net-profit-box-mc {
-            padding: 0px 0px; /* Reset padding */
+            padding: 0px 0px; 
         }
         .net-profit-label-mc { 
-            font-size: 14px; /* Matches Streamlit label size approx */
+            font-size: 14px;
             color: rgb(49, 51, 63);
             margin-bottom: 4px;
         }
         .net-profit-value-mc { 
-            font-size: 2rem; /* Matches Streamlit value size */
+            font-size: 2rem; 
             font-weight: 600;
             line-height: 1.2;
         }
 
-        .np-pos { color: #09ab3b; } /* Streamlit Green */
-        .np-neg { color: #ff2b2b; } /* Streamlit Red */
+        .np-pos { color: #09ab3b; } 
+        .np-neg { color: #ff2b2b; } 
         
         /* 科学检验 样式 */
         .sci-box {
@@ -94,15 +95,17 @@ st.markdown("""
         .sci-title { font-weight: bold; font-size: 1.1em; color: #333; margin-bottom: 8px; border-bottom: 1px dashed #999; padding-bottom: 5px;}
         .sci-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
         .sci-val { font-weight: bold; }
-        .sci-conclusion { margin-top: 10px; font-weight: bold; color: #09ab3b; }
-        .sci-fail { color: #ff2b2b; }
+        /* 避免 f-string 冲突，尽量少在 style 里写 {} */
+        .sci-conclusion-pass { margin-top: 10px; font-weight: bold; color: #09ab3b; }
+        .sci-conclusion-fail { margin-top: 10px; font-weight: bold; color: #ff2b2b; }
+        .sci-desc { margin-top: 5px; line-height: 1.4; }
         .sci-advice { margin-top: 5px; color: #666; font-style: italic; }
 
-        /* Footer small */
+        /* Footer small - slightly larger */
         .footer-advice {
             text-align: center;
             color: #888;
-            font-size: 0.85em;
+            font-size: 1.0em; /* 增大一点: 0.85em -> 1.0em */
             margin-top: 20px;
             border-top: 1px solid #eee;
             padding-top: 10px;
@@ -111,7 +114,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------
-# 🌍 多语言配置 / Multi-language Config
+# 🌍 多语言配置
 # ------------------------------------------------------------
 LANG = {
     "ภาษาไทย": {
@@ -173,7 +176,6 @@ LANG = {
         "sim_res_loss": "💡 ผลลัพธ์: ขาดทุน (เป็นปกติของการพนัน)",
         "sim_res_win": "💡 ผลลัพธ์: กำไร (คุณโชคดีมาก!)",
         "sim_jackpot": "🤯 แจ็กพอตแตก! (ถูกรางวัลที่ 1)",
-        # Scientific Validation (Enhanced)
         "val_title_main": "🧪 การทดสอบทางวิทยาศาสตร์ (Beta)",
         "val_title_sub": "Scientific Validation",
         "sci_title": "ผลการทดสอบ Chi-Square",
@@ -246,7 +248,6 @@ LANG = {
         "sim_res_loss": "💡 点评: 长期参与大概率亏损。请保持娱乐心态。",
         "sim_res_win": "💡 点评: 运气不错，小赚一笔！主要是靠运气。",
         "sim_jackpot": "🤯 天呐！中了头奖 (Jackpot)！",
-        # Scientific Validation (Enhanced as requested)
         "val_title_main": "🧪 科学有效性检验 (Beta)",
         "val_title_sub": "Scientific Validation",
         "sci_title": "Chi-Square 检验报告",
@@ -406,35 +407,55 @@ total_str = T["data_total_fmt"].format(len(df))
 st.success(f"{T['data_loaded']}{total_str}")
 st.text(f"{T['data_latest']} {df.iloc[0]['date']}")
 
-# 统计频率 (2Digits & 3Digits robustly)
+# -----------------------------------------------
+# 数据处理核心 (Robust Parsing)
+# -----------------------------------------------
 all_2digits = []
 all_3digits = []
 
-# 1. 尝试动态扫描 '3digits'
-cols_3 = [c for c in df.columns if '3digits' in c.lower()]
-
-# 2. 如果没找到，尝试常见的可能列名 (Hardcoded fallback)
-if not cols_3:
-    possible_names = ['prize_1st', 'prize_nearby_1', 'prize_nearby_2'] # 如果是简单结构
-    # 这里我们只做个简单的补充，防止完全为空。
-    # 实际上如果真的找不到3位数数据，我们在展示时会fallback到随机
+# 明确的列名，根据 CSV 文件结构
+col_prefix = 'prize_pre_3digit' # singular
+col_suffix = 'prize_sub_3digits' # plural
 
 for idx, row in df.iterrows():
-    # 2 Digits
+    # 1. 2 Digits
     val = str(row['prize_2digits']).strip()
     if len(val) == 1: val = "0" + val
     if val and val.lower() != 'nan':
         all_2digits.append(val)
     
-    # 3 Digits
-    for c in cols_3:
-        val3 = str(row[c]).strip()
-        if val3 and val3.lower() != 'nan':
-            # 有时数据里有其他字符，做个基本清洗
-            import re
-            val3 = re.sub(r'\D', '', val3)
-            if len(val3) == 3:
-                 all_3digits.append(val3)
+    # 2. 3 Digits (List Parsing)
+    # 处理 prize_pre_3digit
+    if col_prefix in df.columns:
+        raw_pre = str(row[col_prefix]).strip()
+        try:
+            # 尝试解析 "['449', '328']"
+            if raw_pre.startswith('[') and raw_pre.endswith(']'):
+                items = ast.literal_literal_eval(raw_pre) # Oops, typeo protection below
+                items = ast.literal_eval(raw_pre)
+                if isinstance(items, list):
+                    for item in items:
+                        if isinstance(item, str) and item.isdigit() and len(item) == 3:
+                            all_3digits.append(item)
+            elif raw_pre.isdigit() and len(raw_pre) == 3: # 如果只是纯数字
+                 all_3digits.append(raw_pre)
+        except:
+            pass # Ignore parsing errors
+
+    # 处理 prize_sub_3digits
+    if col_suffix in df.columns:
+        raw_sub = str(row[col_suffix]).strip()
+        try:
+            if raw_sub.startswith('[') and raw_sub.endswith(']'):
+                items = ast.literal_eval(raw_sub)
+                if isinstance(items, list):
+                    for item in items:
+                        if isinstance(item, str) and item.isdigit() and len(item) == 3:
+                            all_3digits.append(item)
+            elif raw_sub.isdigit() and len(raw_sub) == 3:
+                 all_3digits.append(raw_sub)
+        except:
+            pass
 
 counter_2 = collections.Counter(all_2digits)
 counter_3 = collections.Counter(all_3digits)
@@ -489,22 +510,24 @@ def show_picker_grid(strategy="Trend"):
         pop3 = list(counter_3.keys())
         w3 = list(counter_3.values())
         
-        # 🚨 兜底机制: 如果读不到3位数数据，就用随机数填充，并标注是“模拟”
-        # 这里为了界面好看，直接填充随机数，不让它显示 "---"
         is_simulated_3 = False
         if not pop3:
-            pop3 = [f"{random.randint(0,999):03d}" for _ in range(100)] # Fake population
+            pop3 = [f"{random.randint(0,999):03d}" for _ in range(100)] 
             w3 = [1] * 100
             is_simulated_3 = True
 
         if pop3: picks_3 = random.choices(pop3, weights=w3, k=3)
         
         counts_2 = [counter_2[p] for p in picks_2]
-        # 如果是模拟的，count就是0或随机
+        # 如果是模拟的，count就是0
         counts_3 = [counter_3.get(p, 0) for p in picks_3]
         
         for i in range(3):
-            reason_3 = T['reason'].format(counts_3[i]) if not is_simulated_3 else "Random (No Data)"
+            # Show "No Data" count if simulated, otherwise real count
+            # Note: T['reason'] is like "Run {} times"
+            reason_txt = T['reason'].format(counts_3[i])
+            if is_simulated_3:
+                reason_txt = "Data Error"
             
             html = f"""
             <div class="custom-grid-container">
@@ -516,7 +539,7 @@ def show_picker_grid(strategy="Trend"):
                 <div class="custom-metric-card">
                     <div class="metric-label">{T['rec_label_trend'].format(i+1)}</div>
                     <div class="metric-value">{picks_3[i]}</div>
-                    <div class="metric-delta">↑ {reason_3}</div>
+                    <div class="metric-delta">↑ {reason_txt}</div>
                 </div>
             </div>
             """
@@ -638,7 +661,6 @@ if st.button(T["bt_btn"]):
             net = res["win"] - res["cost"]
             roi = (net / res["cost"]) * 100 if res["cost"] > 0 else 0
             
-            # 净盈亏颜色
             net_color = "np-pos" if net >= 0 else "np-neg"
             net_sign = "+" if net >= 0 else ""
 
@@ -647,7 +669,6 @@ if st.button(T["bt_btn"]):
             c1.write(f"- {T['bt_lbl_hits']} **{res['hits']} / {len(test_set)}**")
             c1.write(f"- {T['bt_lbl_invest']} {res['cost']:,}")
             c2.write(f"- {T['bt_lbl_return']} {res['win']:,}")
-            # Replace metric with custom simplified HTML
             c2.markdown(f"""
                 <div class='net-profit-box-bt'>
                     <div class='net-profit-label-bt'>{T['bt_lbl_net']}</div>
@@ -706,7 +727,6 @@ if st.button(T["sim_btn"]):
     c1, c2, c3 = st.columns(3)
     c1.metric(T["sim_lbl_cost"], f"{total_cost:,}")
     c2.metric(T["sim_lbl_return"], f"{total_win:,}")
-    # Increased font size for MC net profit to match st.metric (approx 2rem)
     c3.markdown(f"""
         <div class='net-profit-box-mc'>
             <div class='net-profit-label-mc'>{T['sim_lbl_net']}</div>
@@ -723,7 +743,7 @@ if st.button(T["sim_btn"]):
         st.warning(T["sim_res_loss"])
 
 # -----------------------------------------------
-# 5. Scientific Validation (Chi-Square) - Enhanced
+# 5. Scientific Validation (Chi-Square) - Exact Fix
 # -----------------------------------------------
 st.divider()
 st.markdown(f"""
@@ -740,10 +760,14 @@ obs = [observed_counts[f"{i:02d}"] for i in range(100)]
 exp = [len(df)/100] * 100
 chi2, p_value = stats.chisquare(obs, f_exp=exp)
 degrees_of_freedom = 99
-critical_value = stats.chi2.ppf(0.95, degrees_of_freedom) # p=0.05, one-tailed
+critical_value = stats.chi2.ppf(0.95, degrees_of_freedom)
 
-# Custom High-End CLI-like Report
-st.markdown(f"""
+# Fix HTML rendering by pre-calculating the class and message
+res_class = "sci-conclusion-pass" if p_value > 0.05 else "sci-conclusion-fail"
+res_msg = T['sci_res_pass'] if p_value > 0.05 else T['sci_res_fail']
+
+# Pure HTML string without complex f-string nesting inside style blocks
+html_report = f"""
     <div class="sci-box">
         <div class="sci-title">{T['sci_title']}</div>
         <div class="sci-row">
@@ -759,21 +783,23 @@ st.markdown(f"""
             <span class="sci-val">{critical_value:.2f}</span>
         </div>
         
-        <div class="{'sci-conclusion' if p_value > 0.05 else 'sci-fail'}">
-            {T['sci_res_pass'] if p_value > 0.05 else T['sci_res_fail']}
+        <div class="{res_class}">
+            {res_msg}
         </div>
-        <div style="margin-top:5px; line-height:1.4;">
+        <div class="sci-desc">
             {T['sci_exp_pass']}
         </div>
          <div class="sci-advice">
             {T['sci_advice']}
         </div>
     </div>
-""", unsafe_allow_html=True)
+"""
+
+st.markdown(html_report, unsafe_allow_html=True)
 
 
 # -----------------------------------------------
-# Footer (Reduced size)
+# Footer (Larger font)
 # -----------------------------------------------
 st.markdown(f"""
     <div class="footer-advice">
