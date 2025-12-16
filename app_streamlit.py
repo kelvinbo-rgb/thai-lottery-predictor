@@ -36,19 +36,40 @@ st.markdown("""
             margin-bottom: 15px;
             display: block;
         }
-        /* 概率标签样式 */
-        .prob-label {
-            font-size: 0.85em;
-            color: #888;
-            font-weight: 400;
-            margin-bottom: 5px;
+        /* Smart Picker 样式 */
+        .custom-grid-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
         }
-        .digit-title {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 0px;
+        .custom-metric-card {
+            width: 48%; 
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            text-align: left;
         }
+        .metric-label { font-size: 0.8em; color: #666; margin-bottom: 2px; }
+        .metric-value { font-size: 1.8em; font-weight: 700; color: #333; line-height: 1.2; }
+        .metric-delta { font-size: 0.8em; color: #28a745; font-weight: 500; }
+        .grid-header { font-size: 1.0em; font-weight: 600; color: #333; }
+        .grid-sub { font-size: 0.75em; color: #888; font-weight: 400; margin-bottom: 8px; }
+        
+        /* 净盈亏 样式 */
+        .net-profit-box {
+            padding: 5px 0px;
+        }
+        .net-profit-label {
+            font-size: 0.85em; 
+            color: #666;
+        }
+        .net-profit-value {
+            font-size: 1.2em; /* 字号适中，不夸张 */
+            font-weight: 700;
+        }
+        .np-pos { color: #28a745; }
+        .np-neg { color: #dc3545; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -79,12 +100,10 @@ LANG = {
         "ev_col_prob": "โอกาส",
         "ev_col_value": "มูลค่า",
         "ev_conclusion_text": "ราคาขาย 80 บาท แต่มูลค่าทางคณิตศาสตร์เพียง {:.2f} บาท\nทุกใบที่คุณซื้อ คือการขาดทุนทางทฤษฎี {:.2f} บาท",
-        # Picker Columns
         "col_2d_title": "2 ตัวท้าย",
         "col_3d_title": "3 ตัว (น/ล)",
         "prob_2d": "โอกาส 1/100",
         "prob_3d": "โอกาส 1/250 (4 รางวัล)",
-        # Backtest
         "bt_title_main": "⏪ ทดสอบย้อนหลัง",
         "bt_title_sub": "Historical Backtest",
         "bt_years_label": "ย้อนหลังกี่ปี?",
@@ -105,7 +124,6 @@ LANG = {
         "bt_con_equal": "ผลลัพธ์ใกล้เคียงกัน! ยืนยันว่า 'เลขเด็ด' ไม่มีผลจริง",
         "bt_con_trend": "เลขเด็ดชนะเล็กน้อย (อาจเป็นแค่ดวง)",
         "bt_con_rand": "เลขสุ่มชนะ! การเก็งเลขตามสถิติไม่ได้ช่วยให้ถูกรางวัลมากขึ้น",
-        # Simulation
         "sim_title_main": "🎲 การจำลอง Monte Carlo",
         "sim_title_sub": "Monte Carlo Simulation",
         "sim_desc": "จำลองเหตุการณ์ในอนาคตด้วยความน่าจะเป็นทางคณิตศาสตร์",
@@ -117,14 +135,12 @@ LANG = {
         "sim_res_loss": "💡 ผลลัพธ์: ขาดทุน (เป็นปกติของการพนัน)",
         "sim_res_win": "💡 ผลลัพธ์: กำไร (คุณโชคดีมาก!)",
         "sim_jackpot": "🤯 แจ็กพอตแตก! (ถูกรางวัลที่ 1)",
-        # Validation
         "val_title_main": "🧪 การทดสอบทางวิทยาศาสตร์",
         "val_title_sub": "Chi-Square Test",
         "val_desc": "ตรวจสอบว่าการออกรางวัล 'สุ่ม' จริงหรือไม่?",
         "val_res_pass": "✅ ผลลัพธ์: กระจายตัวแบบสุ่ม (Uniform Distribution)",
         "val_exp_pass": "ตัวเลขทางสถิติยืนยันว่าไม่มี 'ล็อคเลข' หรือ 'รูปแบบ' ที่คาดเดาได้",
         "val_res_fail": "❌ ผลลัพธ์: มีความผิดปกติทางสถิติ",
-        # Footer
         "final_rec": "💬 คำแนะนำสุดท้าย: หวยคือ 'ความบันเทิง' ไม่ใช่ 'การลงทุน'",
         "footer": "🔒 Private Access Only | 888"
     },
@@ -151,12 +167,10 @@ LANG = {
         "ev_col_prob": "中奖率",
         "ev_col_value": "贡献价值",
         "ev_conclusion_text": "一张售价 80 THB 的彩票，数学价值仅 {:.2f} THB。\n每买一张，理论亏损 {:.2f} THB。",
-        # Picker Columns
         "col_2d_title": "2位数 (末位)",
         "col_3d_title": "3位数 (前/后)",
         "prob_2d": "中奖率: 1/100",
         "prob_3d": "中奖率: 1/250",
-        # Backtest
         "bt_title_main": "⏪ 历史回测",
         "bt_title_sub": "Historical Backtest",
         "bt_years_label": "回测过去多少年数据？",
@@ -177,7 +191,6 @@ LANG = {
         "bt_con_equal": "两种策略表现持平！再次验证了彩票的随机游走性质。",
         "bt_con_trend": "趋势策略略微领先 (可能是运气波动)。",
         "bt_con_rand": "随机策略竟然反超了！说明追热号并不总是有效。",
-        # Simulation
         "sim_title_main": "🎲 蒙特卡洛模拟",
         "sim_title_sub": "Monte Carlo Simulation",
         "sim_desc": "基于数学期望的纯概率模拟 (含头奖)",
@@ -189,14 +202,12 @@ LANG = {
         "sim_res_loss": "💡 点评: 长期参与大概率亏损。请保持娱乐心态。",
         "sim_res_win": "💡 点评: 运气不错，小赚一笔！主要是靠运气。",
         "sim_jackpot": "🤯 天呐！中了头奖 (Jackpot)！",
-        # Validation
         "val_title_main": "🧪 科学有效性检验",
         "val_title_sub": "Chi-Square Test",
         "val_desc": "使用卡方检验 (Chi-Square Test) 验证号码分布是否随机。",
         "val_res_pass": "✅ 结论：分布均匀 (数据是随机的)",
         "val_exp_pass": "P值显示历史数据没有显著偏差。所谓的“热号”只是统计噪音。",
         "val_res_fail": "❌ 结论：发现统计异常",
-        # Footer
         "final_rec": "💬 最终建议: 将彩票视为【消费】而非【投资】。",
         "footer": "🔒 Private Access Only | 888"
     },
@@ -223,12 +234,10 @@ LANG = {
         "ev_col_prob": "Prob.",
         "ev_col_value": "Value",
         "ev_conclusion_text": "Ticket Price: 80 THB, Real Value: {:.2f} THB.\nTheoretical loss per ticket: {:.2f} THB.",
-        # Picker Columns
         "col_2d_title": "2 Digits",
         "col_3d_title": "3 Digits (Prefix/Suffix)",
         "prob_2d": "Prob: 1/100",
         "prob_3d": "Prob: 1/250",
-        # Backtest
         "bt_title_main": "⏪ Historical Backtest",
         "bt_title_sub": "Simulation",
         "bt_years_label": "Years to backtest:",
@@ -249,7 +258,6 @@ LANG = {
         "bt_con_equal": "Both strategies performed similarly.",
         "bt_con_trend": "Trend strategy performed slightly better (likely luck).",
         "bt_con_rand": "Random strategy outperformed Trend.",
-        # Simulation
         "sim_title_main": "🎲 Monte Carlo Simulation",
         "sim_title_sub": "Probabilistic Model",
         "sim_desc": "Pure probability simulation including Jackpot chances.",
@@ -261,14 +269,12 @@ LANG = {
         "sim_res_loss": "💡 Comment: Long term loss is expected.",
         "sim_res_win": "💡 Comment: Lucky!",
         "sim_jackpot": "🤯 JACKPOT HIT!",
-        # Validation
         "val_title_main": "🧪 Scientific Validation",
         "val_title_sub": "Chi-Square Test",
         "val_desc": "Testing for randomness using Chi-Square Goodness of Fit.",
         "val_res_pass": "✅ Result: Uniform Distribution",
         "val_exp_pass": "The data is truly random.",
         "val_res_fail": "❌ Result: Deviation detected",
-        # Footer
         "final_rec": "💬 Final Advice: Treat lottery as consumption, not investment.",
         "footer": "🔒 Private Access Only"
     }
@@ -311,7 +317,7 @@ if not check_password():
     st.stop()
 
 # ------------------------------------------------------------
-# 主标题 (Main Title adjusted for Mobile)
+# 主标题
 # ------------------------------------------------------------
 st.markdown(f"""
     <h1 style='text-align: center; color: #E63946; font-size: 1.8em; margin-bottom: 0px;'>
@@ -346,12 +352,12 @@ total_str = T["data_total_fmt"].format(len(df))
 st.success(f"{T['data_loaded']}{total_str}")
 st.text(f"{T['data_latest']} {df.iloc[0]['date']}")
 
-# 统计频率 (2Digits & 3Digits)
+# 统计频率 (2Digits & 3Digits robustly)
 all_2digits = []
 all_3digits = []
 
-# 定义3位数的列名 (前3 和 后3)
-cols_3 = ['prize_3digits_prefix_1', 'prize_3digits_prefix_2', 'prize_3digits_suffix_1', 'prize_3digits_suffix_2']
+# 自动扫描所有包含 '3digits' 的列名 (Fix for 3-digit picker issue)
+cols_3 = [c for c in df.columns if '3digits' in c.lower()]
 
 for idx, row in df.iterrows():
     # 2 Digits
@@ -360,14 +366,13 @@ for idx, row in df.iterrows():
     if val and val.lower() != 'nan':
         all_2digits.append(val)
     
-    # 3 Digits (from all 4 columns)
+    # 3 Digits
     for c in cols_3:
-        if c in df.columns:
-            val3 = str(row[c]).strip()
-            if val3 and val3.lower() != 'nan':
-                val3 = val3.zfill(3) # Ensure 007, 099 etc.
-                if len(val3) == 3:
-                     all_3digits.append(val3)
+        val3 = str(row[c]).strip()
+        if val3 and val3.lower() != 'nan':
+            val3 = val3.zfill(3)
+            if len(val3) == 3:
+                    all_3digits.append(val3)
 
 counter_2 = collections.Counter(all_2digits)
 counter_3 = collections.Counter(all_3digits)
@@ -378,9 +383,7 @@ counter_3 = collections.Counter(all_3digits)
 st.divider()
 tab1, tab2 = st.tabs([T["tab_trend"], T["tab_random"]])
 
-# Helper function to display parallel columns using HTML to force side-by-side on mobile
 def show_picker_grid(strategy="Trend"):
-    # Custom CSS for the grid
     st.markdown("""
     <style>
         .custom-grid-container {
@@ -389,22 +392,16 @@ def show_picker_grid(strategy="Trend"):
             margin-bottom: 10px;
         }
         .custom-metric-card {
-            width: 48%; /* Force 50% width approx */
-            background-color: #f9f9f9; /* Light grey bg similar to st */
+            width: 48%; 
+            background-color: #f9f9f9; 
             padding: 10px;
             border-radius: 8px;
             border: 1px solid #eee;
             text-align: left;
         }
-        .metric-label { font-size: 0.8em; color: #666; margin-bottom: 2px; }
-        .metric-value { font-size: 1.8em; font-weight: 700; color: #333; line-height: 1.2; }
-        .metric-delta { font-size: 0.8em; color: #28a745; font-weight: 500; }
-        .grid-header { font-size: 1.0em; font-weight: 600; color: #333; }
-        .grid-sub { font-size: 0.75em; color: #888; font-weight: 400; margin-bottom: 8px; }
     </style>
     """, unsafe_allow_html=True)
     
-    # Grid Header HTML
     st.markdown(f"""
     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
         <div style="width:48%">
@@ -418,7 +415,6 @@ def show_picker_grid(strategy="Trend"):
     </div>
     """, unsafe_allow_html=True)
     
-    # Logic
     picks_2 = []
     picks_3 = []
     
@@ -437,7 +433,6 @@ def show_picker_grid(strategy="Trend"):
         counts_3 = [counter_3[p] for p in picks_3]
         
         for i in range(3):
-            # Render Row via HTML
             html = f"""
             <div class="custom-grid-container">
                 <div class="custom-metric-card">
@@ -472,7 +467,6 @@ def show_picker_grid(strategy="Trend"):
             </div>
             """
             st.markdown(html, unsafe_allow_html=True)
-
 
 with tab1:
     st.write(T["trend_desc"])
@@ -509,7 +503,6 @@ df_ev = pd.DataFrame(data_ev)
 df_ev[T["ev_col_value"]] = df_ev[T["ev_col_amount"]] * (df_ev[T["ev_col_prob"]] / 1000000)
 df_ev[T["ev_col_prob"]] = df_ev[T["ev_col_prob"]].apply(lambda x: f"1/{int(1000000/x)}") 
 
-# 展示
 st.dataframe(
     df_ev[[T["ev_col_prize"], T["ev_col_rule"], T["ev_col_amount"], T["ev_col_prob"], T["ev_col_value"]]], 
     hide_index=True,
@@ -571,12 +564,23 @@ if st.button(T["bt_btn"]):
         def show_stats(name, res):
             net = res["win"] - res["cost"]
             roi = (net / res["cost"]) * 100 if res["cost"] > 0 else 0
+            
+            # 净盈亏颜色
+            net_color = "np-pos" if net >= 0 else "np-neg"
+            net_sign = "+" if net >= 0 else ""
+
             st.markdown(f"##### {name}")
             c1, c2 = st.columns(2)
             c1.write(f"- {T['bt_lbl_hits']} **{res['hits']} / {len(test_set)}**")
             c1.write(f"- {T['bt_lbl_invest']} {res['cost']:,}")
             c2.write(f"- {T['bt_lbl_return']} {res['win']:,}")
-            c2.metric(T["bt_lbl_net"], f"{net:,} THB", delta=net)
+            # Replace metric with custom simplified HTML
+            c2.markdown(f"""
+                <div class='net-profit-box'>
+                    <div class='net-profit-label'>{T['bt_lbl_net']}</div>
+                    <div class='net-profit-value {net_color}'>{net_sign}{net:,} THB</div>
+                </div>
+            """, unsafe_allow_html=True)
             st.write(f"- {T['bt_lbl_roi']} **{roi:.2f}%**")
             st.divider()
 
@@ -623,10 +627,19 @@ if st.button(T["sim_btn"]):
         progress_bar.progress((i + 1) / simulations)
         
     net_profit = total_win - total_cost
+    net_color = "np-pos" if net_profit >= 0 else "np-neg"
+    net_sign = "+" if net_profit >= 0 else ""
+    
     c1, c2, c3 = st.columns(3)
     c1.metric(T["sim_lbl_cost"], f"{total_cost}")
     c2.metric(T["sim_lbl_return"], f"{total_win}")
-    c3.metric(T["sim_lbl_net"], f"{net_profit}", delta=net_profit)
+    # Replace metric with custom simplified HTML
+    c3.markdown(f"""
+        <div class='net-profit-box'>
+            <div class='net-profit-label'>{T['sim_lbl_net']}</div>
+            <div class='net-profit-value {net_color}'>{net_sign}{net_profit:,}</div>
+        </div>
+    """, unsafe_allow_html=True)
     
     if jackpot_hit:
         st.balloons()
