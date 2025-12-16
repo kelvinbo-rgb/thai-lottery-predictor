@@ -16,7 +16,7 @@ st.set_page_config(page_title="Thai Lottery", page_icon="💰", layout="centered
 st.markdown("""
     <style>
         .block-container {
-            padding-top: 2.5rem !important; /* 增加一点，防止语言栏被遮挡 */
+            padding-top: 2.5rem !important;
             padding-bottom: 2rem !important;
         }
         #MainMenu {visibility: hidden;}
@@ -24,7 +24,6 @@ st.markdown("""
         h1 {
             padding-bottom: 0px !important;
         }
-        /* 子标题统一样式 */
         .section-header {
             font-size: 1.3em;
             font-weight: 600;
@@ -36,6 +35,19 @@ st.markdown("""
             margin-top: -5px;
             margin-bottom: 15px;
             display: block;
+        }
+        /* 概率标签样式 */
+        .prob-label {
+            font-size: 0.85em;
+            color: #888;
+            font-weight: 400;
+            margin-bottom: 5px;
+        }
+        .digit-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0px;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -55,18 +67,23 @@ LANG = {
         "tab_random": "🧪 เลขสุ่ม (Random)",
         "trend_desc": "แนะนำเลขที่ออกบ่อยในอดีต (Top Hits)",
         "random_desc": "สุ่มตัวเลขตามหลักความน่าจะเป็น (Pure Random)",
-        "rec_label_trend": "เลขแนะนำ",
-        "rec_label_radom": "เลขสุ่ม",
+        "rec_label_trend": "แนะนำ ({})",
+        "rec_label_radom": "สุ่ม ({})",
         "reason": "ออก {} ครั้ง",
         "reason_rnd": "สุ่มแท้จริง",
         "ev_title": "📊 ความจริงทางคณิตศาสตร์",
         "ev_desc": "ตารางแสดงมูลค่าจริงของสลากฯ เมื่อเทียบกับราคาขาย",
         "ev_col_prize": "รางวัล",
         "ev_col_rule": "กติกา",
-        "ev_col_amount": "เงิน",  # 极致缩短: Money
+        "ev_col_amount": "เงิน",
         "ev_col_prob": "โอกาส",
-        "ev_col_value": "มูลค่า",      
+        "ev_col_value": "มูลค่า",
         "ev_conclusion_text": "ราคาขาย 80 บาท แต่มูลค่าทางคณิตศาสตร์เพียง {:.2f} บาท\nทุกใบที่คุณซื้อ คือการขาดทุนทางทฤษฎี {:.2f} บาท",
+        # Picker Columns
+        "col_2d_title": "2 ตัวท้าย",
+        "col_3d_title": "3 ตัว (น/ล)",
+        "prob_2d": "โอกาส 1/100",
+        "prob_3d": "โอกาส 1/250 (4 รางวัล)",
         # Backtest
         "bt_title_main": "⏪ ทดสอบย้อนหลัง",
         "bt_title_sub": "Historical Backtest",
@@ -122,8 +139,8 @@ LANG = {
         "tab_random": "🧪 随机策略 (Random)",
         "trend_desc": "基于历史出现频率最高的号码推荐",
         "random_desc": "完全数学随机推荐 (承认独立概率)",
-        "rec_label_trend": "推荐",
-        "rec_label_radom": "随机",
+        "rec_label_trend": "推荐 ({})",
+        "rec_label_radom": "随机 ({})",
         "reason": "出现 {} 次",
         "reason_rnd": "纯随机",
         "ev_title": "📊 奖金结构与数学真相",
@@ -134,6 +151,11 @@ LANG = {
         "ev_col_prob": "中奖率",
         "ev_col_value": "贡献价值",
         "ev_conclusion_text": "一张售价 80 THB 的彩票，数学价值仅 {:.2f} THB。\n每买一张，理论亏损 {:.2f} THB。",
+        # Picker Columns
+        "col_2d_title": "2位数 (末位)",
+        "col_3d_title": "3位数 (前/后)",
+        "prob_2d": "中奖率: 1/100",
+        "prob_3d": "中奖率: 1/250",
         # Backtest
         "bt_title_main": "⏪ 历史回测",
         "bt_title_sub": "Historical Backtest",
@@ -189,8 +211,8 @@ LANG = {
         "tab_random": "🧪 Random Pick",
         "trend_desc": "Based on historical frequency (Hot Numbers)",
         "random_desc": "Pure mathematical random selection",
-        "rec_label_trend": "Pick",
-        "rec_label_radom": "Rand",
+        "rec_label_trend": "Pick ({})",
+        "rec_label_radom": "Rand ({})",
         "reason": "Hit {} times",
         "reason_rnd": "Random",
         "ev_title": "📊 Math & Truth",
@@ -201,6 +223,11 @@ LANG = {
         "ev_col_prob": "Prob.",
         "ev_col_value": "Value",
         "ev_conclusion_text": "Ticket Price: 80 THB, Real Value: {:.2f} THB.\nTheoretical loss per ticket: {:.2f} THB.",
+        # Picker Columns
+        "col_2d_title": "2 Digits",
+        "col_3d_title": "3 Digits (Prefix/Suffix)",
+        "prob_2d": "Prob: 1/100",
+        "prob_3d": "Prob: 1/250",
         # Backtest
         "bt_title_main": "⏪ Historical Backtest",
         "bt_title_sub": "Simulation",
@@ -319,14 +346,31 @@ total_str = T["data_total_fmt"].format(len(df))
 st.success(f"{T['data_loaded']}{total_str}")
 st.text(f"{T['data_latest']} {df.iloc[0]['date']}")
 
-# 统计频率
+# 统计频率 (2Digits & 3Digits)
 all_2digits = []
+all_3digits = []
+
+# 定义3位数的列名 (前3 和 后3)
+cols_3 = ['prize_3digits_prefix_1', 'prize_3digits_prefix_2', 'prize_3digits_suffix_1', 'prize_3digits_suffix_2']
+
 for idx, row in df.iterrows():
+    # 2 Digits
     val = str(row['prize_2digits']).strip()
     if len(val) == 1: val = "0" + val
     if val and val.lower() != 'nan':
         all_2digits.append(val)
+    
+    # 3 Digits (from all 4 columns)
+    for c in cols_3:
+        if c in df.columns:
+            val3 = str(row[c]).strip()
+            if val3 and val3.lower() != 'nan':
+                val3 = val3.zfill(3) # Ensure 007, 099 etc.
+                if len(val3) == 3:
+                     all_3digits.append(val3)
+
 counter_2 = collections.Counter(all_2digits)
+counter_3 = collections.Counter(all_3digits)
 
 # -----------------------------------------------
 # 1. 选号助手 (Smart Picker)
@@ -334,23 +378,57 @@ counter_2 = collections.Counter(all_2digits)
 st.divider()
 tab1, tab2 = st.tabs([T["tab_trend"], T["tab_random"]])
 
+# Helper function to display parallel columns
+def show_picker_grid(strategy="Trend"):
+    # Header
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown(f"<div class='digit-title'>{T['col_2d_title']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='prob-label'>{T['prob_2d']}</div>", unsafe_allow_html=True)
+    with c2:
+        st.markdown(f"<div class='digit-title'>{T['col_3d_title']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='prob-label'>{T['prob_3d']}</div>", unsafe_allow_html=True)
+    
+    # Logic
+    picks_2 = []
+    picks_3 = []
+    
+    if strategy == "Trend":
+        pop2 = list(counter_2.keys())
+        w2 = list(counter_2.values())
+        if pop2: picks_2 = random.choices(pop2, weights=w2, k=3)
+        else: picks_2 = ["--", "--", "--"]
+        
+        pop3 = list(counter_3.keys())
+        w3 = list(counter_3.values())
+        if pop3: picks_3 = random.choices(pop3, weights=w3, k=3)
+        else: picks_3 = ["---", "---", "---"]
+        
+        counts_2 = [counter_2[p] for p in picks_2]
+        counts_3 = [counter_3[p] for p in picks_3]
+        
+        for i in range(3):
+            rc1, rc2 = st.columns(2)
+            rc1.metric(T["rec_label_trend"].format(i+1), picks_2[i], delta=T["reason"].format(counts_2[i]))
+            rc2.metric(T["rec_label_trend"].format(i+1), picks_3[i], delta=T["reason"].format(counts_3[i]))
+
+    else: # Random
+        picks_2 = [f"{random.randint(0,99):02d}" for _ in range(3)]
+        picks_3 = [f"{random.randint(0,999):03d}" for _ in range(3)]
+        
+        for i in range(3):
+            rc1, rc2 = st.columns(2)
+            rc1.metric(T["rec_label_radom"].format(i+1), picks_2[i])
+            rc2.metric(T["rec_label_radom"].format(i+1), picks_3[i])
+
+
 with tab1:
     st.write(T["trend_desc"])
-    cols = st.columns(3)
-    population = list(counter_2.keys())
-    weights = list(counter_2.values())
-    if population:
-        trend_picks = random.choices(population, weights=weights, k=3)
-        for i, num in enumerate(trend_picks):
-            count = counter_2[num]
-            cols[i].metric(label=f"{T['rec_label_trend']} {i+1}", value=num, delta=T["reason"].format(count))
+    show_picker_grid("Trend")
 
 with tab2:
     st.write(T["random_desc"])
-    cols = st.columns(3)
-    rand_picks = [f"{random.randint(0,99):02d}" for _ in range(3)]
-    for i, num in enumerate(rand_picks):
-        cols[i].metric(label=f"{T['rec_label_radom']} {i+1}", value=num)
+    show_picker_grid("Random")
 
 # -----------------------------------------------
 # 2. 数学表 (Math Table)
@@ -363,9 +441,7 @@ if st.session_state["lang_choice"] == "中文":
     p_names = ["一等奖", "二等奖", "三等奖", "四等奖", "五等奖", "邻近奖", "前/后三", "末两位"]
     p_rules = ["6位全中", "6位", "6位", "6位", "6位", "头奖±1", "前3或后3", "末2位"]
 elif st.session_state["lang_choice"] == "ภาษาไทย":
-    p_names = ["รางวัลที่ 1", "รางวัลที่ 2", "รางวัลที่ 3", "รางวัลที่ 4", "รางวัลที่ 5", "ข้างเคียง", "3 ตัวหน้า/หลัง", "2 ตัวท้าย"] # 这个字段很长，单独改
-    # 极简修改:
-    p_names[6] = "3ตัวน/ล" # 前/后三 
+    p_names = ["รางวัลที่ 1", "รางวัลที่ 2", "รางวัลที่ 3", "รางวัลที่ 4", "รางวัลที่ 5", "ข้างเคียง", "3ตัวน/ล", "2 ตัวท้าย"] 
     p_rules = ["ตรงทุกตัว", "6 หลัก", "6 หลัก", "6 หลัก", "6 หลัก", "ใกล้เคียง", "3 ตัว", "2 ตัว"]
 else:
     p_names = ["1st Prize", "2nd Prize", "3rd Prize", "4th Prize", "5th Prize", "Side Prize", "3 Digits", "2 Digits"]
