@@ -380,12 +380,12 @@ tab1, tab2 = st.tabs([T["tab_trend"], T["tab_random"]])
 
 # Helper function to display parallel columns
 def show_picker_grid(strategy="Trend"):
-    # Header
-    c1, c2 = st.columns(2)
-    with c1:
+    # Header Row
+    h1, h2 = st.columns(2)
+    with h1:
         st.markdown(f"<div class='digit-title'>{T['col_2d_title']}</div>", unsafe_allow_html=True)
         st.markdown(f"<div class='prob-label'>{T['prob_2d']}</div>", unsafe_allow_html=True)
-    with c2:
+    with h2:
         st.markdown(f"<div class='digit-title'>{T['col_3d_title']}</div>", unsafe_allow_html=True)
         st.markdown(f"<div class='prob-label'>{T['prob_3d']}</div>", unsafe_allow_html=True)
     
@@ -407,19 +407,39 @@ def show_picker_grid(strategy="Trend"):
         counts_2 = [counter_2[p] for p in picks_2]
         counts_3 = [counter_3[p] for p in picks_3]
         
-        for i in range(3):
-            rc1, rc2 = st.columns(2)
-            rc1.metric(T["rec_label_trend"].format(i+1), picks_2[i], delta=T["reason"].format(counts_2[i]))
-            rc2.metric(T["rec_label_trend"].format(i+1), picks_3[i], delta=T["reason"].format(counts_3[i]))
+        # Row 1
+        r1c1, r1c2 = st.columns(2)
+        r1c1.metric(T["rec_label_trend"].format(1), picks_2[0], delta=T["reason"].format(counts_2[0]))
+        r1c2.metric(T["rec_label_trend"].format(1), picks_3[0], delta=T["reason"].format(counts_3[0]))
+        
+        # Row 2
+        r2c1, r2c2 = st.columns(2)
+        r2c1.metric(T["rec_label_trend"].format(2), picks_2[1], delta=T["reason"].format(counts_2[1]))
+        r2c2.metric(T["rec_label_trend"].format(2), picks_3[1], delta=T["reason"].format(counts_3[1]))
+        
+        # Row 3
+        r3c1, r3c2 = st.columns(2)
+        r3c1.metric(T["rec_label_trend"].format(3), picks_2[2], delta=T["reason"].format(counts_2[2]))
+        r3c2.metric(T["rec_label_trend"].format(3), picks_3[2], delta=T["reason"].format(counts_3[2]))
 
     else: # Random
         picks_2 = [f"{random.randint(0,99):02d}" for _ in range(3)]
         picks_3 = [f"{random.randint(0,999):03d}" for _ in range(3)]
         
-        for i in range(3):
-            rc1, rc2 = st.columns(2)
-            rc1.metric(T["rec_label_radom"].format(i+1), picks_2[i])
-            rc2.metric(T["rec_label_radom"].format(i+1), picks_3[i])
+        # Row 1
+        r1c1, r1c2 = st.columns(2)
+        r1c1.metric(T["rec_label_radom"].format(1), picks_2[0])
+        r1c2.metric(T["rec_label_radom"].format(1), picks_3[0])
+        
+        # Row 2
+        r2c1, r2c2 = st.columns(2)
+        r2c1.metric(T["rec_label_radom"].format(2), picks_2[1])
+        r2c2.metric(T["rec_label_radom"].format(2), picks_3[1])
+        
+        # Row 3
+        r3c1, r3c2 = st.columns(2)
+        r3c1.metric(T["rec_label_radom"].format(3), picks_2[2])
+        r3c2.metric(T["rec_label_radom"].format(3), picks_3[2])
 
 
 with tab1:
