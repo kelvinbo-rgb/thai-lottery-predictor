@@ -190,7 +190,7 @@ LANG = {
         "footer": "🔒 Private Access Only | 888"
     },
     "中文": {
-        "title": "💰 泰国彩票智能决策",
+        "title": "💰 泰国彩票AI智能策略",
         "password_label": "请输入访问密码:",
         "password_error": "😕 密码错误",
         "data_loaded": "💾 数据已加载",
@@ -198,8 +198,9 @@ LANG = {
         "data_latest": "最新: ",
         "tab_trend": "🔥 趋势策略 (Trend)",
         "tab_random": "🧪 随机策略 (Random)",
-        "trend_desc": "基于历史出现频率最高的号码推荐",
+        "trend_desc": "基于历史出现频率最高的号码推荐 (逻辑: 假设历史存在惯性，权重偏向热号)。",
         "random_desc": "完全数学随机推荐 (承认独立概率)",
+        "hottest_numbers_title": "🔥 历史高频号码",
         "rec_label_trend": "推荐 ({})",
         "rec_label_radom": "随机 ({})",
         "reason": "出现 {} 次",
@@ -238,8 +239,8 @@ LANG = {
         "bt_con_rand": "随机策略竟然反超了！说明追热号并不总是有效。",
         "sim_title_main": "🎲 蒙特卡洛模拟",
         "sim_title_sub": "Monte Carlo Simulation",
-        "sim_desc": "基于数学期望的纯概率模拟 (含头奖)",
-        "sim_desc_long": "概率模型 (Probability Model) 计算包含头奖在内的所有中奖机会。",
+        "sim_desc": "基于数学期望的纯概率模拟 (含头奖全概率)",
+        "sim_desc_long": "概率模型 (Probability Model) 计算包含头奖在内的所有中奖机会，模拟长期投资的最终回报。",
         "sim_btn": "运行模拟",
         "sim_narration": "📝 模拟假设: 您坚持买彩票 {} 年，每期仅买 1 张 (80 THB)...",
         "sim_lbl_cost": "总投入",
@@ -258,7 +259,7 @@ LANG = {
         "sci_exp_pass": "数据表现为真正的随机分布。历史“热号”只是统计噪音，不代表未来趋势。",
         "sci_advice": "建议：使用【完全随机推荐】策略。",
         "sci_res_fail": "❌ [结论] 发现统计异常",
-        "final_rec": "💬 最终建议: 将彩票视为【消费】而非【投资】。",
+        "final_rec": "💬 最终建议: 将彩票视为【消费】而非【投资】。祝你好运！",
         "footer": "🔒 Private Access Only | 888"
     },
     "English": {
@@ -568,6 +569,31 @@ with tab1:
     st.write(T["trend_desc"])
     show_picker_grid("Trend")
 
+    # --- Display Top 5 Hottest Numbers ---
+    st.markdown(f"<br><h6>{T['hottest_numbers_title']}</h6>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    # 2-Digit Hot Numbers
+    with col1:
+        st.markdown(f"**{T['col_2d_title']}**")
+        most_common_2 = counter_2.most_common(5)
+        if most_common_2:
+            for num, count in most_common_2:
+                st.markdown(f"• `{num}` ({T['reason'].format(count)})")
+        else:
+            st.info("N/A")
+
+    # 3-Digit Hot Numbers
+    with col2:
+        st.markdown(f"**{T['col_3d_title']}**")
+        most_common_3 = counter_3.most_common(5)
+        if most_common_3:
+            for num, count in most_common_3:
+                st.markdown(f"• `{num}` ({T['reason'].format(count)})")
+        else:
+            st.info("N/A")
+
 with tab2:
     st.write(T["random_desc"])
     show_picker_grid("Random")
@@ -688,19 +714,20 @@ if st.button(T["bt_btn"]):
         else: st.error(T["bt_con_rand"])
 
 # -----------------------------------------------
-# 4. Monte Carlo Simulation
+# 4. Monte Carlo Simulation (Full Probability Model)
 # -----------------------------------------------
 st.divider()
 st.markdown(f"""
     <div class='section-header'>{T['sim_title_main']}</div>
     <div class='section-sub'>{T['sim_title_sub']}</div>
 """, unsafe_allow_html=True)
-st.markdown(T["sim_desc_long"]) # Use longer desc
+st.markdown(T["sim_desc_long"])
 
 if st.button(T["sim_btn"]):
     years_mc = 5
+    simulations = 24 * years_mc  # 24 draws per year
+
     st.markdown(T["sim_narration"].format(years_mc))
-    simulations = int(120 * (years_mc/5) * 5)
     
     ticket_price = 80
     total_cost = 0
@@ -708,29 +735,42 @@ if st.button(T["sim_btn"]):
     jackpot_hit = False
     progress_bar = st.progress(0)
     
-    for i in range(simulations):
-        total_cost += ticket_price
-        current_win = 0
-        if random.random() < 0.01: current_win += 2000
-        if random.random() < 0.004: current_win += 4000
-        if random.random() < 0.000001: 
-            current_win += 6000000
-            jackpot_hit = True
-        if random.random() < 0.00016: current_win += 20000
-        total_win += current_win
-        progress_bar.progress((i + 1) / simulations)
-        
+    # Full prize structure based on a pool of 1,000,000 tickets
+    prizes = [
+        {"prize": 6000000, "prob": 1/1000000, "name": T["sim_jackpot"]},
+        {"prize": 200000, "prob": 5/1000000},
+        {"prize": 80000, "prob": 10/1000000},
+        {"prize": 40000, "prob": 50/1000000},
+        {"prize": 20000, "prob": 100/1000000},
+        {"prize": 100000, "prob": 2/1000000}, # Nearby Prize
+        {"prize": 4000, "prob": 4000/1000000}, # 3-Digits
+        {"prize": 2000, "prob": 10000/1000000}, # 2-Digits
+    ]
+
+    with st.spinner(f"Running {simulations} simulations..."):
+        for i in range(simulations):
+            total_cost += ticket_price
+
+            # Check for win against each prize tier
+            for p in prizes:
+                if random.random() < p["prob"]:
+                    total_win += p["prize"]
+                    if p["prize"] == 6000000:
+                        jackpot_hit = True
+
+            progress_bar.progress((i + 1) / simulations)
+
     net_profit = total_win - total_cost
     net_color = "np-pos" if net_profit >= 0 else "np-neg"
     net_sign = "+" if net_profit >= 0 else ""
     
     c1, c2, c3 = st.columns(3)
-    c1.metric(T["sim_lbl_cost"], f"{total_cost:,}")
-    c2.metric(T["sim_lbl_return"], f"{total_win:,}")
+    c1.metric(T["sim_lbl_cost"], f"{total_cost:,} THB")
+    c2.metric(T["sim_lbl_return"], f"{total_win:,} THB")
     c3.markdown(f"""
         <div class='net-profit-box-mc'>
             <div class='net-profit-label-mc'>{T['sim_lbl_net']}</div>
-            <div class='net-profit-value-mc {net_color}'>{net_sign}{net_profit:,}</div>
+            <div class='net-profit-value-mc {net_color}'>{net_sign}{net_profit:,} THB</div>
         </div>
     """, unsafe_allow_html=True)
     
@@ -743,7 +783,7 @@ if st.button(T["sim_btn"]):
         st.warning(T["sim_res_loss"])
 
 # -----------------------------------------------
-# 5. Scientific Validation (Chi-Square) - Exact Fix
+# 5. Scientific Validation (Chi-Square)
 # -----------------------------------------------
 st.divider()
 st.markdown(f"""
@@ -751,23 +791,34 @@ st.markdown(f"""
     <div class='section-sub'>{T['val_title_sub']}</div>
 """, unsafe_allow_html=True)
 
+# Chi-Square Test Logic
 observed_counts = collections.Counter(all_2digits)
 for i in range(100):
     k = f"{i:02d}"
     if k not in observed_counts: observed_counts[k] = 0
 
 obs = [observed_counts[f"{i:02d}"] for i in range(100)]
+# Expected frequency if perfectly random
 exp = [len(df)/100] * 100
-chi2, p_value = stats.chisquare(obs, f_exp=exp)
-degrees_of_freedom = 99
-critical_value = stats.chi2.ppf(0.95, degrees_of_freedom)
+if sum(exp) > 0: # Avoid division by zero if no data
+    chi2, p_value = stats.chisquare(obs, f_exp=exp)
+    degrees_of_freedom = 99
+    critical_value = stats.chi2.ppf(0.95, degrees_of_freedom)
 
-# Fix HTML rendering by pre-calculating the class and message
-res_class = "sci-conclusion-pass" if p_value > 0.05 else "sci-conclusion-fail"
-res_msg = T['sci_res_pass'] if p_value > 0.05 else T['sci_res_fail']
+    # Determine result class and text based on p-value
+    if p_value > 0.05:
+        conclusion_class = "sci-conclusion-pass"
+        conclusion_text = T['sci_res_pass']
+        description_text = T['sci_exp_pass']
+        advice_text = T['sci_advice']
+    else:
+        conclusion_class = "sci-conclusion-fail"
+        conclusion_text = T['sci_res_fail']
+        description_text = "数据分布与纯随机模型存在显著差异。" # A more appropriate message for failure
+        advice_text = "建议：可适度关注热号，但需保持谨慎。"
 
-# Pure HTML string without complex f-string nesting inside style blocks
-html_report = f"""
+    # Render the report as a single HTML block for consistent styling
+    report_html = f"""
     <div class="sci-box">
         <div class="sci-title">{T['sci_title']}</div>
         <div class="sci-row">
@@ -782,20 +833,14 @@ html_report = f"""
             <span>{T['sci_crit']}</span>
             <span class="sci-val">{critical_value:.2f}</span>
         </div>
-        
-        <div class="{res_class}">
-            {res_msg}
-        </div>
-        <div class="sci-desc">
-            {T['sci_exp_pass']}
-        </div>
-         <div class="sci-advice">
-            {T['sci_advice']}
-        </div>
+        <div class="{conclusion_class}">{conclusion_text}</div>
+        <div class="sci-desc">{description_text}</div>
+        <div class="sci-advice">{advice_text}</div>
     </div>
-"""
-
-st.markdown(html_report, unsafe_allow_html=True)
+    """
+    st.markdown(report_html, unsafe_allow_html=True)
+else:
+    st.warning("没有足够的数据进行科学检验 (Not enough data for test)。")
 
 
 # -----------------------------------------------
