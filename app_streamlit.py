@@ -6,7 +6,9 @@ import collections
 import os
 import scipy.stats as stats
 import datetime
-import ast # 用于解析 ['123', '456'] 格式的字符串
+import ast
+import requests
+from bs4 import BeautifulSoup
 
 # ------------------------------------------------------------
 # 🎨 界面样式优化 (CSS)
@@ -205,7 +207,13 @@ LANG = {
         "sci_advice": "คำแนะนำ: ใช้กลยุทธ์ 'สุ่มตัวเลข' (Random)",
         "sci_res_fail": "❌ [สรุป] พบความผิดปกติทางสถิติ",
         "final_rec": "💬 คำแนะนำสุดท้าย: หวยคือ 'ความบันเทิง' ไม่ใช่ 'การลงทุน' | ขอให้โชคดี!",
-        "footer": "🔒 Private Access Only | 888"
+        "footer": " | 888",
+        "sponsor_title": "☕ สนับสนุนผู้พัฒนา",
+        "sponsor_desc": "หากคุณโชคดี หรือชอบแนวคิดนี้ คุณสามารถสนับสนุนได้!",
+        "sponsor_alipay": "Alipay (จีน)",
+        "sponsor_promptpay": "PromptPay (ไทย)",
+        "sponsor_msg": "ขอให้โชคดีและสมหวังทุกความฝันครับ!",
+        "auto_update_msg": "🔄 กำลังอัปเดตข้อมูลล่าสุด..."
     },
     "中文": {
         "title": "💰 泰国彩票AI智能策略",
@@ -291,7 +299,13 @@ LANG = {
         "sci_advice": "建议：使用【完全随机推荐】策略。",
         "sci_res_fail": "❌ [结论] 发现统计异常",
         "final_rec": "💬 最终建议: 将彩票视为【消费】而非【投资】。| 祝您好运!",
-        "footer": "🔒 Private Access Only | 888"
+        "footer": " | 888",
+        "sponsor_title": "☕ 赞助作者",
+        "sponsor_desc": "如果你的财运实现，如果你的思路多了一点提示，请我一点赞助，我会更有动力去更新和分享，希望终有一日你我梦境成真。",
+        "sponsor_alipay": "中国支付宝",
+        "sponsor_promptpay": "泰国收款码",
+        "sponsor_msg": "祝终有一日你我梦境成真。",
+        "auto_update_msg": "🔄 检测到新一期数据，正在自动更新..."
     },
     "English": {
         "title": "💰 Thai Lottery AI Strategy",
@@ -377,7 +391,13 @@ LANG = {
         "sci_advice": "Recommendation: Use 'Random Strategy'.",
         "sci_res_fail": "❌ [Conclusion] Deviation detected",
         "final_rec": "💬 Final Advice: Treat lottery as consumption, not investment. | Good Luck!",
-        "footer": "🔒 Private Access Only | 888"
+        "footer": " | 888",
+        "sponsor_title": "☕ Support Creator",
+        "sponsor_desc": "If you find this useful and want to support continued development.",
+        "sponsor_alipay": "Alipay (CN)",
+        "sponsor_promptpay": "PromptPay (TH)",
+        "sponsor_msg": "May your dreams come true.",
+        "auto_update_msg": "🔄 Auto-updating latest results..."
     }
 }
 
@@ -388,34 +408,148 @@ if "lang_choice" not in st.session_state:
 c1, c2 = st.columns([3, 1])
 with c2:
     options = ["ภาษาไทย", "中文", "English"]
-    # Fix: Use key to bind directly to session_state for one-click updates
     st.selectbox("Language", options, key="lang_choice", label_visibility="collapsed")
 
 T = LANG[st.session_state.lang_choice]
 
 # ------------------------------------------------------------
-# 🔐 安全验证 (Security)
+# 🤖 自动更新逻辑 (Auto-Scraper)
 # ------------------------------------------------------------
-def check_password():
-    def password_entered():
-        if st.session_state["password"] == "888":
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]
-        else:
-            st.session_state["password_correct"] = False
+# URL of a reliable source (Sanook Lotto)
+SOURCE_URL = "https://news.sanook.com/lotto/"
+DATA_FILE = "historical_data.csv"
 
-    if "password_correct" not in st.session_state:
-        st.text_input(T["password_label"], type="password", on_change=password_entered, key="password")
-        return False
-    elif not st.session_state["password_correct"]:
-        st.text_input(T["password_label"], type="password", on_change=password_entered, key="password")
-        st.error(T["password_error"])
-        return False
-    else:
-        return True
+def get_thai_month_map():
+    return {
+        "มกราคม": "01", "กุมภาพันธ์": "02", "มีนาคม": "03", "เมษายน": "04",
+        "พฤษภาคม": "05", "มิถุนายน": "06", "กรกฎาคม": "07", "สิงหาคม": "08",
+        "กันยายน": "09", "ตุลาคม": "10", "พฤศจิกายน": "11", "ธันวาคม": "12"
+    }
 
-if not check_password():
-    st.stop()
+def update_dataset_if_needed():
+    if not os.path.exists(DATA_FILE):
+        return
+
+    try:
+        df = pd.read_csv(DATA_FILE)
+        # Parse Dates
+        def parse_dt(d):
+            try: return pd.to_datetime(d, format="%m/%d/%Y")
+            except: 
+                try: return pd.to_datetime(d, format="%Y-%m-%d")
+                except: return pd.NaT
+        df['dt_obj'] = df['date'].apply(parse_dt)
+        latest_date = df['dt_obj'].max()
+        
+        today = datetime.datetime.now()
+        
+        # Simple Logic: Check if we are past the 1st or 16th and data is missing
+        # If today is > 1st and < 16th, latest should be >= 1st
+        # If today is > 16th, latest should be >= 16th
+        
+        should_update = False
+        
+        # Check logic
+        if today.day >= 1 and latest_date.month == today.month and latest_date.year == today.year:
+            # Same month check
+            if today.day > 1 and today.day < 16:
+                # Expecting 1st
+                if latest_date.day < 1: 
+                    should_update = True
+            elif today.day > 16:
+                # Expecting 16th
+                if latest_date.day < 16:
+                    should_update = True
+        elif latest_date < today - datetime.timedelta(days=15):
+             # If data is very old (more than 15 days)
+             should_update = True
+
+        if should_update:
+            with st.spinner(T["auto_update_msg"]):
+                scrape_and_append(df)
+            
+    except Exception as e:
+        # Silently fail or log in debug
+        print(f"Update Check Error: {e}")
+
+def scrape_and_append(current_df):
+    try:
+        response = requests.get(SOURCE_URL)
+        if response.status_code != 200: return
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        # Sanook specific scraping (Robust Search)
+        # 1. Date Check in Title
+        # <h1 class="title">... 16 ธันวาคม 2568 ...</h1>
+        title = soup.find("h1")
+        date_str = ""
+        if title:
+            text = title.get_text()
+            # Extract date
+            # simple keyword match
+            month_map = get_thai_month_map()
+            for m_th, m_num in month_map.items():
+                if m_th in text:
+                    # found month
+                    # find day (1 or 16)
+                    day = "01"
+                    if "16" in text: day = "16"
+                    elif "1 " in text: day = "01"
+                    
+                    # find year (2568 -> 2025)
+                    # Year is usually current Thai year
+                    th_year = int(datetime.datetime.now().year) + 543
+                    if str(th_year) in text:
+                        year = str(th_year - 543)
+                    else:
+                        year = str(datetime.datetime.now().year)
+
+                    date_str = f"{m_num}/{day}/{year}" # MM/DD/YYYY to match CSV
+                    break
+        
+        if not date_str: return
+        
+        # Check if date exists
+        if date_str in current_df['date'].values:
+            return
+            
+        # 2. Parse Numbers
+        prize_1 = None
+        prize_2d = None
+        
+        # Sanook often has <div class="lotto__number--1st">763895</div>
+        # and <div class="lotto__number--last2">52</div>
+        
+        p1_div = soup.find("div", class_=lambda x: x and "number--1st" in x)
+        if p1_div: prize_1 = p1_div.get_text().strip()
+        
+        p2d_div = soup.find("div", class_=lambda x: x and "number--last2" in x)
+        if p2d_div: prize_2d = p2d_div.get_text().strip()
+        
+        if not prize_1 or not prize_2d:
+            return
+
+        # Construct new row
+        new_row = {
+            "date": date_str,
+            "prize_1st": prize_1,
+            "prize_2digits": prize_2d,
+            "prize_pre_3digit": "[]", # parsing 3 digits is risky without strict classes, keep empty safe
+            "prize_sub_3digits": "[]"
+        }
+        
+        # Append to CSV
+        df_new = pd.DataFrame([new_row])
+        df_new.to_csv(DATA_FILE, mode='a', header=False, index=False)
+        st.toast(f"Updated data for {date_str}!", icon="✅")
+        st.experimental_rerun()
+        
+    except:
+        pass
+
+# Run Auto-Update Check
+update_dataset_if_needed()
 
 # ------------------------------------------------------------
 # 主标题 & 最新数据
@@ -949,11 +1083,34 @@ st.markdown(html_report, unsafe_allow_html=True)
 
 
 # -----------------------------------------------
-# Footer (Larger font)
+# Footer (Larger font) & Donation
 # -----------------------------------------------
 st.markdown(clean_html(f"""
 <div class="footer-advice">
 {T['final_rec']}<br>
 {T['footer']}
+</div>
+"""), unsafe_allow_html=True)
+
+st.divider()
+
+# Donation Section
+st.markdown(clean_html(f"""
+<div style="text-align: center; margin-top: 20px;">
+<h3>{T['sponsor_title']}</h3>
+<p style="color: #666;">{T['sponsor_desc']}</p>
+</div>
+"""), unsafe_allow_html=True)
+
+# QR Codes Layout
+dc1, dc2 = st.columns(2)
+with dc1:
+    st.image("qr_alipay.jpg", caption=T['sponsor_alipay'], use_container_width=True)
+with dc2:
+    st.image("qr_promptpay.jpg", caption=T['sponsor_promptpay'], use_container_width=True)
+
+st.markdown(clean_html(f"""
+<div style="text-align: center; margin-top: 15px; font-style: italic; color: #555;">
+"{T['sponsor_msg']}"
 </div>
 """), unsafe_allow_html=True)
