@@ -110,16 +110,6 @@ st.markdown("""
             border-top: 1px solid #eee;
             padding-top: 10px;
         }
-        
-        /* Hot/Cold Stats */
-        .stats-box {
-            background-color: #f0f8ff;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #cce5ff;
-            font-size: 0.85em;
-            margin-bottom: 15px;
-        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -134,14 +124,18 @@ LANG = {
         "data_loaded": "💾 โหลดข้อมูลแล้ว",
         "data_total_fmt": " (ทั้งหมด {} งวด)",
         "data_latest": "งวดล่าสุด ({}): ",
-        "tab_trend": "🔥 เลขเด็ด (Trend)",
-        "tab_random": "🧪 เลขสุ่ม (Random)",
-        "trend_desc": "แนะนำเลขที่ออกบ่อยในอดีต (Top Hits)",
-        "random_desc": "สุ่มตัวเลขตามหลักความน่าจะเป็น (Pure Random)",
-        "rec_label_trend": "แนะนำ ({})",
-        "rec_label_radom": "สุ่ม ({})",
-        "reason": "ออก {} ครั้ง",
-        "reason_rnd": "สุ่มแท้จริง",
+        "tab_trend": "🔥 Trend (กระแส)",
+        "tab_random": "🧪 Random (สุ่ม)",
+        "tab_hot": "📊 Hot (สถิติ)",
+        "trend_desc": "🧬 กฎแห่งแรงเฉื่อย (Inertia)\nเชื่อว่าตัวเลขที่มี 'พลังงาน' จะยังคงออกซ้ำ",
+        "random_desc": "🎲 กฎแห่งความโกลาหล (Entropy)\nทุกตัวเลขมีโอกาสเท่ากัน ไม่มีใครรู้อนาคต",
+        "hot_desc": "📈 กฎจำนวนมาก (Law of Large Numbers)\nสถิติระยะยาวชี้เป้าตัวเลขที่แข็งแกร่งที่สุด",
+        "rec_label_trend": "Trend #{}",
+        "rec_label_radom": "Rand #{}",
+        "rec_label_hot": "Hot #{}",
+        "reason": "{} ครั้ง",
+        "reason_rnd": "สุ่ม",
+        "reason_hot": "ออกบ่อยสุด",
         "ev_title": "📊 ความจริงทางคณิตศาสตร์",
         "ev_desc": "ตารางแสดงมูลค่าจริงของสลากฯ เมื่อเทียบกับราคาขาย",
         "ev_col_prize": "รางวัล",
@@ -150,12 +144,12 @@ LANG = {
         "ev_col_prob": "โอกาส",
         "ev_col_value": "มูลค่า",
         "ev_conclusion_text": "ราคาขาย 80 บาท แต่มูลค่าทางคณิตศาสตร์เพียง {:.2f} บาท\nทุกใบที่คุณซื้อ คือการขาดทุนทางทฤษฎี {:.2f} บาท",
-        "col_2d_title": "2 ตัวท้าย (2D)",
-        "col_3d_title": "3 ตัว (3D)",
+        "col_2d_title": "เลขท้าย 2 ตัว",
+        "col_3d_title": "เลขท้าย 3 ตัว",
         "prob_2d": "โอกาส 1/100",
-        "prob_3d": "โอกาส 1/250 (4 รางวัล)",
+        "prob_3d": "โอกาส 1/250",
         "stats_hot": "🔥 เลขมาแรง (Hot):",
-        "stats_cold": "❄️ เลขเข้าน้อย (Cold):",
+        "stats_hot_desc": "สถิติย้อนหลังสูงสุด",
         "bt_title_main": "⏪ ทดสอบย้อนหลัง",
         "bt_title_sub": "Historical Backtest",
         "bt_years_label": "ย้อนหลังกี่ปี?",
@@ -215,12 +209,16 @@ LANG = {
         "data_latest": "最新第 {} 期 : ",
         "tab_trend": "🔥 趋势策略 (Trend)",
         "tab_random": "🧪 随机策略 (Random)",
-        "trend_desc": "基于历史出现频率最高的号码推荐 (逻辑: 假设历史存在惯性，权重偏向热号)",
-        "random_desc": "完全数学随机推荐 (承认独立概率)",
+        "tab_hot": "📊 热门策略 (Hot)",
+        "trend_desc": "**🧬 历史惯性定律 (Inertia)**\n假设数字存在“热度”，近期频繁出现的数字具有动量，未来可能继续出现。",
+        "random_desc": "**🎲 最大熵原理 (Entropy)**\n承认每次开奖都是独立事件，使用量子级真随机算法，消除人为偏见。",
+        "hot_desc": "**📈 大数定律 (Law of Large Numbers)**\n基于长期大样本统计，筛选出历史概率分布中表现最强势的“黄金号码”。",
         "rec_label_trend": "推荐 ({})",
         "rec_label_radom": "随机 ({})",
+        "rec_label_hot": "热门 ({})",
         "reason": "出现 {} 次",
         "reason_rnd": "纯随机",
+        "reason_hot": "历史最热",
         "ev_title": "📊 奖金结构与数学真相",
         "ev_desc": "这是彩票的真实价值表。",
         "ev_col_prize": "奖项",
@@ -229,12 +227,12 @@ LANG = {
         "ev_col_prob": "中奖率",
         "ev_col_value": "贡献价值",
         "ev_conclusion_text": "一张售价 80 THB 的彩票，数学价值仅 {:.2f} THB。\n每买一张，理论亏损 {:.2f} THB。",
-        "col_2d_title": "2位数 (2D)",
-        "col_3d_title": "3位数 (3D)",
-        "prob_2d": "中奖率: 1/100",
-        "prob_3d": "中奖率: 1/250",
-        "stats_hot": "🔥 热门号码 (Hot):",
-        "stats_cold": "❄️ 冷门号码 (Cold):",
+        "col_2d_title": "两位数",
+        "col_3d_title": "三位数",
+        "prob_2d": "概率 1/100",
+        "prob_3d": "概率 1/250",
+        "stats_hot": "🔥 热门号码速览:",
+        "stats_hot_desc": "Top 5 出现频率",
         "bt_title_main": "⏪ 历史回测",
         "bt_title_sub": "Historical Backtest",
         "bt_years_label": "回测过去多少年数据？",
@@ -292,14 +290,18 @@ LANG = {
         "data_loaded": "💾 Data Loaded",
         "data_total_fmt": " (Total {})",
         "data_latest": "Latest Draw ({}): ",
-        "tab_trend": "🔥 Trend Pick",
-        "tab_random": "🧪 Random Pick",
-        "trend_desc": "Based on historical frequency (Logic: Assuming history has inertia, preferring hot numbers)",
-        "random_desc": "Pure mathematical random selection",
-        "rec_label_trend": "Pick ({})",
-        "rec_label_radom": "Rand ({})",
-        "reason": "Hit {} times",
+        "tab_trend": "🔥 Trend Strategy",
+        "tab_random": "🧪 Random Strategy",
+        "tab_hot": "📊 Hot Strategy",
+        "trend_desc": "**🧬 Theory of Inertia**\nAssuming numbers follow momentum. What has happened frequently may continue to happen.",
+        "random_desc": "**🎲 Theory of Entropy**\nRecognizing that each draw is independent. True chaos is the only fairness.",
+        "hot_desc": "**📈 Law of Large Numbers**\nIdentifying the strongest numbers from long-term historical distribution.",
+        "rec_label_trend": "Trend #{}",
+        "rec_label_radom": "Rand #{}",
+        "rec_label_hot": "Hot #{}",
+        "reason": "{} Hits",
         "reason_rnd": "Random",
+        "reason_hot": "Top Hit",
         "ev_title": "📊 Math & Truth",
         "ev_desc": "The real mathematical value of a lottery ticket.",
         "ev_col_prize": "Prize",
@@ -313,7 +315,7 @@ LANG = {
         "prob_2d": "Prob: 1/100",
         "prob_3d": "Prob: 1/250",
         "stats_hot": "🔥 Hot Numbers:",
-        "stats_cold": "❄️ Cold Numbers:",
+        "stats_hot_desc": "Most Frequent",
         "bt_title_main": "⏪ Historical Backtest",
         "bt_title_sub": "Simulation",
         "bt_years_label": "Years to backtest:",
@@ -372,9 +374,15 @@ if "lang_choice" not in st.session_state:
 
 c1, c2 = st.columns([3, 1])
 with c2:
-    options = ["ภาษาไทย", "中文", "English"]
-    lang_opt = st.selectbox("Language", options, label_visibility="collapsed")
-    st.session_state["lang_choice"] = lang_opt
+    try:
+        options = ["ภาษาไทย", "中文", "English"]
+        lang_idx = 0
+        if st.session_state["lang_choice"] == "中文": lang_idx = 1
+        elif st.session_state["lang_choice"] == "English": lang_idx = 2
+        lang_opt = st.selectbox("Language", options, index=lang_idx, label_visibility="collapsed")
+        st.session_state["lang_choice"] = lang_opt
+    except:
+        pass
 
 T = LANG[st.session_state["lang_choice"]]
 
@@ -496,158 +504,89 @@ counter_2 = collections.Counter(all_2digits)
 counter_3 = collections.Counter(all_3digits)
 
 # -----------------------------------------------
-# 1. 选号助手 (Smart Picker)
+# 1. 智能决策中心 (AI Strategy Center)
 # -----------------------------------------------
 st.divider()
-tab1, tab2 = st.tabs([T["tab_trend"], T["tab_random"]])
 
-def show_picker_grid(strategy="Trend"):
-    st.markdown("""
-    <style>
-        .custom-grid-container {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        .custom-metric-card {
-            width: 48%; 
-            background-color: #f9f9f9; 
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #eee;
-            text-align: left;
-        }
-        .stats-box {
-            background-color: #f0f8ff;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #cce5ff;
-            font-size: 0.85em;
-            margin-bottom: 15px;
-        }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # Grid Headers
-    st.markdown(f"""
-    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-        <div style="width:48%">
-            <div class="grid-header">{T['col_2d_title']}</div>
-            <div class="grid-sub">{T['prob_2d']}</div>
-        </div>
-        <div style="width:48%">
-            <div class="grid-header">{T['col_3d_title']}</div>
-            <div class="grid-sub">{T['prob_3d']}</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # ------------------
-    # DISPLAY PICKER
-    # ------------------
-    picks_2 = []
-    picks_3 = []
-    
-    if strategy == "Trend":
-        pop2 = list(counter_2.keys())
-        w2 = list(counter_2.values())
-        if pop2: picks_2 = random.choices(pop2, weights=w2, k=3)
-        else: picks_2 = ["--", "--", "--"]
-        
-        pop3 = list(counter_3.keys())
-        w3 = list(counter_3.values())
-        
-        is_simulated_3 = False
-        if not pop3:
-            pop3 = [f"{random.randint(0,999):03d}" for _ in range(100)] 
-            w3 = [1] * 100
-            is_simulated_3 = True
+# Tab Layout
+tab1, tab2, tab3 = st.tabs([T["tab_trend"], T["tab_random"], T["tab_hot"]])
 
-        if pop3: picks_3 = random.choices(pop3, weights=w3, k=3)
-        
-        counts_2 = [counter_2[p] for p in picks_2]
-        # 如果是模拟的，count就是0
-        counts_3 = [counter_3.get(p, 0) for p in picks_3]
-        
+
+def show_picker_grid_card(picks_2, picks_3, reasons_2, reasons_3, desc):
+    st.markdown(f"<div style='margin-bottom:15px; font-size:0.95em; color:#444;'>{desc}</div>", unsafe_allow_html=True)
+    
+    # 2 Digits / 3 Digits Layout (Side by Side columns)
+    c_left, c_right = st.columns(2)
+    
+    with c_left:
+        st.markdown(f"<div class='grid-header'>{T['col_2d_title']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='grid-sub'>{T['prob_2d']}</div>", unsafe_allow_html=True)
         for i in range(3):
-            reason_txt = T['reason'].format(counts_3[i])
-            if is_simulated_3: reason_txt = "Data Error"
-            
-            html = f"""
-            <div class="custom-grid-container">
-                <div class="custom-metric-card">
-                    <div class="metric-label">{T['rec_label_trend'].format(i+1)}</div>
-                    <div class="metric-value">{picks_2[i]}</div>
-                    <div class="metric-delta">↑ {T['reason'].format(counts_2[i])}</div>
-                </div>
-                <div class="custom-metric-card">
-                    <div class="metric-label">{T['rec_label_trend'].format(i+1)}</div>
-                    <div class="metric-value">{picks_3[i]}</div>
-                    <div class="metric-delta">↑ {reason_txt}</div>
-                </div>
+            p = picks_2[i] if i < len(picks_2) else "--"
+            r = reasons_2[i] if i < len(reasons_2) else ""
+            delta_html = f"<div class='metric-delta'>↑ {r}</div>" if r else ""
+            st.markdown(f"""
+            <div class="custom-metric-card" style="width:100%; margin-bottom:10px;">
+                <div class="metric-label">{T['rec_label_trend'].format(i+1) if 'Trend' in desc else (T['rec_label_radom'].format(i+1) if 'Random' in desc else T['rec_label_hot'].format(i+1))}</div>
+                <div class="metric-value">{p}</div>
+                {delta_html}
             </div>
-            """
-            st.markdown(html, unsafe_allow_html=True)
-
-    else: # Random
-        picks_2 = [f"{random.randint(0,99):02d}" for _ in range(3)]
-        picks_3 = [f"{random.randint(0,999):03d}" for _ in range(3)]
-        
+            """, unsafe_allow_html=True)
+            
+    with c_right:
+        st.markdown(f"<div class='grid-header'>{T['col_3d_title']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='grid-sub'>{T['prob_3d']}</div>", unsafe_allow_html=True)
         for i in range(3):
-            html = f"""
-            <div class="custom-grid-container">
-                <div class="custom-metric-card">
-                    <div class="metric-label">{T['rec_label_radom'].format(i+1)}</div>
-                    <div class="metric-value">{picks_2[i]}</div>
-                </div>
-                <div class="custom-metric-card">
-                    <div class="metric-label">{T['rec_label_radom'].format(i+1)}</div>
-                    <div class="metric-value">{picks_3[i]}</div>
-                </div>
+            p = picks_3[i] if i < len(picks_3) else "--"
+            r = reasons_3[i] if i < len(reasons_3) else ""
+            delta_html = f"<div class='metric-delta'>↑ {r}</div>" if r else ""
+            st.markdown(f"""
+            <div class="custom-metric-card" style="width:100%; margin-bottom:10px;">
+                <div class="metric-label">{T['rec_label_trend'].format(i+1) if 'Trend' in desc else (T['rec_label_radom'].format(i+1) if 'Random' in desc else T['rec_label_hot'].format(i+1))}</div>
+                <div class="metric-value">{p}</div>
+                {delta_html}
             </div>
-            """
-            st.markdown(html, unsafe_allow_html=True)
-            
-    # ------------------
-    # DISPLAY STATISTICS (Hot/Cold)
-    # ------------------
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Get Top/Bottom stats
-    mc2 = counter_2.most_common()
-    mc3 = counter_3.most_common()
-    
-    if mc2:
-        hot2 = ", ".join([f"{k}({v})" for k,v in mc2[:5]])
-        cold2 = ", ".join([f"{k}({v})" for k,v in mc2[-5:]])
-    else:
-        hot2, cold2 = "-", "-"
-        
-    if mc3:
-        hot3 = ", ".join([f"{k}({v})" for k,v in mc3[:5]])
-        cold3 = ", ".join([f"{k}({v})" for k,v in mc3[-5:]])
-    else:
-        hot3, cold3 = "-", "-"
-        
-    st.markdown(f"""
-    <div class="stats-box">
-        <strong>{T['stats_hot']}</strong><br>
-        2D: {hot2}<br>
-        3D: {hot3}<br><br>
-        <strong>{T['stats_cold']}</strong><br>
-        2D: {cold2}<br>
-        3D: {cold3}
-    </div>
-    """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
+
+# --- 1. Trend Strategy Data ---
+pop2 = list(counter_2.keys())
+w2 = list(counter_2.values())
+t_picks_2 = random.choices(pop2, weights=w2, k=3) if pop2 else ["--"]*3
+t_reasons_2 = [T['reason'].format(counter_2[p]) for p in t_picks_2]
+
+pop3 = list(counter_3.keys())
+w3 = list(counter_3.values())
+if not pop3:
+    pop3 = [f"{random.randint(0,999):03d}" for _ in range(100)]
+    w3 = [1]*100
+t_picks_3 = random.choices(pop3, weights=w3, k=3)
+t_reasons_3 = [T['reason'].format(counter_3.get(p, 0)) for p in t_picks_3]
+
+# --- 2. Random Strategy Data ---
+r_picks_2 = [f"{random.randint(0,99):02d}" for _ in range(3)]
+r_reasons_2 = [T['reason_rnd']] * 3
+r_picks_3 = [f"{random.randint(0,999):03d}" for _ in range(3)]
+r_reasons_3 = [T['reason_rnd']] * 3
+
+# --- 3. Hot Stats Data ---
+h_picks_2 = [k for k,v in counter_2.most_common(3)]
+h_reasons_2 = [T['reason'].format(counter_2[k]) for k in h_picks_2]
+h_picks_3 = [k for k,v in counter_3.most_common(3)]
+h_reasons_3 = [T['reason'].format(counter_3[k]) for k in h_picks_3]
+# Pad if empty
+while len(h_picks_2) < 3: h_picks_2.append("--"); h_reasons_2.append("")
+while len(h_picks_3) < 3: h_picks_3.append("--"); h_reasons_3.append("")
 
 with tab1:
-    st.write(T["trend_desc"])
-    show_picker_grid("Trend")
+    show_picker_grid_card(t_picks_2, t_picks_3, t_reasons_2, t_reasons_3, T["trend_desc"])
 
 with tab2:
-    st.write(T["random_desc"])
-    show_picker_grid("Random")
+    show_picker_grid_card(r_picks_2, r_picks_3, r_reasons_2, r_reasons_3, T["random_desc"])
+
+with tab3:
+     show_picker_grid_card(h_picks_2, h_picks_3, h_reasons_2, h_reasons_3, T["hot_desc"])
+
 
 # -----------------------------------------------
 # 2. 数学表 (Math Table)
