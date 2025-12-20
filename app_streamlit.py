@@ -110,11 +110,21 @@ st.markdown("""
             border-top: 1px solid #eee;
             padding-top: 10px;
         }
+        
+        /* Hot/Cold Stats */
+        .stats-box {
+            background-color: #f0f8ff;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #cce5ff;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
 # ------------------------------------------------------------
-# 🌍 多语言配置
+# 🌍 多语言配置 / Multi-language Config
 # ------------------------------------------------------------
 LANG = {
     "ภาษาไทย": {
@@ -123,7 +133,7 @@ LANG = {
         "password_error": "😕 รหัสผ่านผิด",
         "data_loaded": "💾 โหลดข้อมูลแล้ว",
         "data_total_fmt": " (ทั้งหมด {} งวด)",
-        "data_latest": "งวดล่าสุด: ",
+        "data_latest": "งวดล่าสุด ({}): ",
         "tab_trend": "🔥 เลขเด็ด (Trend)",
         "tab_random": "🧪 เลขสุ่ม (Random)",
         "trend_desc": "แนะนำเลขที่ออกบ่อยในอดีต (Top Hits)",
@@ -140,10 +150,12 @@ LANG = {
         "ev_col_prob": "โอกาส",
         "ev_col_value": "มูลค่า",
         "ev_conclusion_text": "ราคาขาย 80 บาท แต่มูลค่าทางคณิตศาสตร์เพียง {:.2f} บาท\nทุกใบที่คุณซื้อ คือการขาดทุนทางทฤษฎี {:.2f} บาท",
-        "col_2d_title": "2 ตัวท้าย",
-        "col_3d_title": "3 ตัว (น/ล)",
+        "col_2d_title": "2 ตัวท้าย (2D)",
+        "col_3d_title": "3 ตัว (3D)",
         "prob_2d": "โอกาส 1/100",
         "prob_3d": "โอกาส 1/250 (4 รางวัล)",
+        "stats_hot": "🔥 เลขมาแรง (Hot):",
+        "stats_cold": "❄️ เลขเข้าน้อย (Cold):",
         "bt_title_main": "⏪ ทดสอบย้อนหลัง",
         "bt_title_sub": "Historical Backtest",
         "bt_years_label": "ย้อนหลังกี่ปี?",
@@ -168,6 +180,11 @@ LANG = {
         "sim_title_sub": "Monte Carlo Simulation",
         "sim_desc": "จำลองเหตุการณ์ในอนาคตด้วยความน่าจะเป็นทางคณิตศาสตร์",
         "sim_desc_long": "โมเดลความน่าจะเป็น (Probability Model) คำนวณโอกาสถูกรางวัลทุกประเภท รวมถึงรางวัลที่ 1",
+        "sim_intro": """
+        🎫 มูลค่าทางคณิตศาสตร์จริง: **48.00 บาท** (จากราคา 80 บาท)
+        💸 ขาดทุนเฉลี่ยต่อใบ: **-32.00 บาท**
+        📉 ROI ทางทฤษฎี: **-40.00%**
+        """,
         "sim_btn": "เริ่ม Monte Carlo",
         "sim_narration": "📝 สมมติฐาน: คุณซื้อหวยงวดละ 1 ใบ (80 บาท) ต่อเนื่องเป็นเวลา {} ปี...",
         "sim_lbl_cost": "ต้นทุนรวม",
@@ -186,40 +203,38 @@ LANG = {
         "sci_exp_pass": "ข้อมูลแสดงให้เห็นถึงการกระจายแบบสุ่มที่แท้จริง 'เลขเด็ด' ในอดีตเป็นเพียงความบังเอิญ",
         "sci_advice": "คำแนะนำ: ใช้กลยุทธ์ 'สุ่มตัวเลข' (Random)",
         "sci_res_fail": "❌ [สรุป] พบความผิดปกติทางสถิติ",
-        "final_rec": "💬 คำแนะนำสุดท้าย: หวยคือ 'ความบันเทิง' ไม่ใช่ 'การลงทุน'",
+        "final_rec": "💬 คำแนะนำสุดท้าย: หวยคือ 'ความบันเทิง' ไม่ใช่ 'การลงทุน' | ขอให้โชคดี!",
         "footer": "🔒 Private Access Only | 888"
     },
     "中文": {
-        "title": "💰 泰国彩票智能决策",
+        "title": "💰 泰国彩票AI智能策略",
         "password_label": "请输入访问密码:",
         "password_error": "😕 密码错误",
         "data_loaded": "💾 数据已加载",
         "data_total_fmt": " (共 {} 期)",
-        "data_latest": "最新: ",
-        "data_latest_detail": "日期: {} | 一等奖: {} | 末两位: {}", 
+        "data_latest": "最新第 {} 期 : ",
         "tab_trend": "🔥 趋势策略 (Trend)",
-        "tab_hot": "🏆 热门号码 (Hot)",
         "tab_random": "🧪 随机策略 (Random)",
-        "trend_desc": "利用加权随机算法，基于历史“热度”进行推荐。虽然每次摇奖独立，但短期内的统计偏差可能会持续。",
-        "hot_desc": "统计历史上出现频率最高的号码。这些是名副其实的“冠军号码”。",
-        "random_desc": "完全数学随机推荐 (承认独立概率)。这是最科学的玩法，因为彩票本质是随机游走。",
+        "trend_desc": "基于历史出现频率最高的号码推荐 (逻辑: 假设历史存在惯性，权重偏向热号)",
+        "random_desc": "完全数学随机推荐 (承认独立概率)",
         "rec_label_trend": "推荐 ({})",
-        "rec_label_hot": "热门 ({})",
         "rec_label_radom": "随机 ({})",
         "reason": "出现 {} 次",
         "reason_rnd": "纯随机",
         "ev_title": "📊 奖金结构与数学真相",
-        "ev_desc": "这是彩票的真实价值表。了解由于“抽水”导致的数学劣势。",
+        "ev_desc": "这是彩票的真实价值表。",
         "ev_col_prize": "奖项",
         "ev_col_rule": "规则",
         "ev_col_amount": "奖金",
         "ev_col_prob": "中奖率",
         "ev_col_value": "贡献价值",
         "ev_conclusion_text": "一张售价 80 THB 的彩票，数学价值仅 {:.2f} THB。\n每买一张，理论亏损 {:.2f} THB。",
-        "col_2d_title": "2位数 (末位)",
-        "col_3d_title": "3位数 (前/后)",
+        "col_2d_title": "2位数 (2D)",
+        "col_3d_title": "3位数 (3D)",
         "prob_2d": "中奖率: 1/100",
         "prob_3d": "中奖率: 1/250",
+        "stats_hot": "🔥 热门号码 (Hot):",
+        "stats_cold": "❄️ 冷门号码 (Cold):",
         "bt_title_main": "⏪ 历史回测",
         "bt_title_sub": "Historical Backtest",
         "bt_years_label": "回测过去多少年数据？",
@@ -244,8 +259,13 @@ LANG = {
         "sim_title_sub": "Monte Carlo Simulation",
         "sim_desc": "基于数学期望的纯概率模拟 (含头奖)",
         "sim_desc_long": "概率模型 (Probability Model) 计算包含头奖在内的所有中奖机会。",
+        "sim_intro": """
+        🎫 单张彩票真实数学价值: **48.00 THB** (含头奖等全概率)
+        💸 每买一张平均亏损: **-32.00 THB**
+        📉 理论回报率 (ROI): **-40.00%**
+        """,
         "sim_btn": "运行模拟",
-        "sim_narration": "📝 模拟假设: 您坚持买彩票 {} 年，每期仅买 1 张 (80 THB)...",
+        "sim_narration": "📝 模拟假设: 您坚持买彩票 {} 年，每期坚持买 1 张 (80 THB)...",
         "sim_lbl_cost": "总投入",
         "sim_lbl_return": "总奖金",
         "sim_lbl_net": "净盈亏",
@@ -262,19 +282,19 @@ LANG = {
         "sci_exp_pass": "数据表现为真正的随机分布。历史“热号”只是统计噪音，不代表未来趋势。",
         "sci_advice": "建议：使用【完全随机推荐】策略。",
         "sci_res_fail": "❌ [结论] 发现统计异常",
-        "final_rec": "💬 最终建议: 将彩票视为【消费】而非【投资】。",
+        "final_rec": "💬 最终建议: 将彩票视为【消费】而非【投资】。| 祝您好运!",
         "footer": "🔒 Private Access Only | 888"
     },
     "English": {
-        "title": "💰 Thai Lottery Insight",
+        "title": "💰 Thai Lottery AI Strategy",
         "password_label": "Enter Password:",
         "password_error": "😕 Incorrect Password",
         "data_loaded": "💾 Data Loaded",
         "data_total_fmt": " (Total {})",
-        "data_latest": "Latest: ",
+        "data_latest": "Latest Draw ({}): ",
         "tab_trend": "🔥 Trend Pick",
         "tab_random": "🧪 Random Pick",
-        "trend_desc": "Based on historical frequency (Hot Numbers)",
+        "trend_desc": "Based on historical frequency (Logic: Assuming history has inertia, preferring hot numbers)",
         "random_desc": "Pure mathematical random selection",
         "rec_label_trend": "Pick ({})",
         "rec_label_radom": "Rand ({})",
@@ -289,9 +309,11 @@ LANG = {
         "ev_col_value": "Value",
         "ev_conclusion_text": "Ticket Price: 80 THB, Real Value: {:.2f} THB.\nTheoretical loss per ticket: {:.2f} THB.",
         "col_2d_title": "2 Digits",
-        "col_3d_title": "3 Digits (Prefix/Suffix)",
+        "col_3d_title": "3 Digits",
         "prob_2d": "Prob: 1/100",
         "prob_3d": "Prob: 1/250",
+        "stats_hot": "🔥 Hot Numbers:",
+        "stats_cold": "❄️ Cold Numbers:",
         "bt_title_main": "⏪ Historical Backtest",
         "bt_title_sub": "Simulation",
         "bt_years_label": "Years to backtest:",
@@ -316,6 +338,11 @@ LANG = {
         "sim_title_sub": "Probabilistic Model",
         "sim_desc": "Pure probability simulation including Jackpot chances.",
         "sim_desc_long": "Calculates winning chances for all prizes including Jackpot.",
+        "sim_intro": """
+        🎫 Real Value: **48.00 THB**
+        💸 Avg Loss: **-32.00 THB**
+        📉 Theoretical ROI: **-40.00%**
+        """,
         "sim_btn": "Run Simulation",
         "sim_narration": "📝 Assumption: Buying 1 ticket (80 THB) per draw for {} years...",
         "sim_lbl_cost": "Total Cost",
@@ -334,7 +361,7 @@ LANG = {
         "sci_exp_pass": "Data behaves as true random. 'Hot numbers' are just noise.",
         "sci_advice": "Recommendation: Use 'Random Strategy'.",
         "sci_res_fail": "❌ [Conclusion] Deviation detected",
-        "final_rec": "💬 Final Advice: Treat lottery as consumption, not investment.",
+        "final_rec": "💬 Final Advice: Treat lottery as consumption, not investment. | Good Luck!",
         "footer": "🔒 Private Access Only"
     }
 }
@@ -376,13 +403,13 @@ if not check_password():
     st.stop()
 
 # ------------------------------------------------------------
-# 主标题
+# 主标题 & 最新数据
 # ------------------------------------------------------------
 st.markdown(f"""
     <h1 style='text-align: center; color: #E63946; font-size: 1.8em; margin-bottom: 0px;'>
         {T['title']}
     </h1>
-    <hr style='margin-top: 5px; margin-bottom: 20px;'>
+    <hr style='margin-top: 5px; margin-bottom: 15px;'>
 """, unsafe_allow_html=True)
 
 # 读取数据
@@ -406,21 +433,15 @@ if df.empty:
     st.error("No Data Found.")
     st.stop()
 
-# 数据加载显示
-total_str = T["data_total_fmt"].format(len(df))
-st.success(f"{T['data_loaded']}{total_str}")
+# 显示最新一期结果
+latest = df.iloc[0]
+latest_date_str = latest['date']
+latest_1st = str(latest['prize_1st']).zfill(6)
+latest_2d = str(latest['prize_2digits']).zfill(2)
 
-# 显示最新一期详细数据
-if "data_latest_detail" in T:
-    latest_row = df.iloc[0]
-    detail_str = T["data_latest_detail"].format(
-        latest_row['date'], 
-        latest_row.get('prize_1st', 'N/A'), 
-        latest_row.get('prize_2digits', 'N/A')
-    )
-    st.info(detail_str)
-else:
-    st.text(f"{T['data_latest']} {df.iloc[0]['date']}")
+st.success(f"{T['data_loaded']}{T['data_total_fmt'].format(len(df))}")
+st.info(f"📅 {T['data_latest'].format(latest_date_str)} **{latest_1st}** (1st) | **{latest_2d}** (2D)")
+
 
 # -----------------------------------------------
 # 数据处理核心 (Robust Parsing)
@@ -446,7 +467,6 @@ for idx, row in df.iterrows():
         try:
             # 尝试解析 "['449', '328']"
             if raw_pre.startswith('[') and raw_pre.endswith(']'):
-                items = ast.literal_literal_eval(raw_pre) # Oops, typeo protection below
                 items = ast.literal_eval(raw_pre)
                 if isinstance(items, list):
                     for item in items:
@@ -479,11 +499,7 @@ counter_3 = collections.Counter(all_3digits)
 # 1. 选号助手 (Smart Picker)
 # -----------------------------------------------
 st.divider()
-if "tab_hot" in T:
-    tab1, tab2, tab3 = st.tabs([T["tab_trend"], T["tab_hot"], T["tab_random"]])
-else:
-    tab1, tab2 = st.tabs([T["tab_trend"], T["tab_random"]])
-    tab3 = None
+tab1, tab2 = st.tabs([T["tab_trend"], T["tab_random"]])
 
 def show_picker_grid(strategy="Trend"):
     st.markdown("""
@@ -501,9 +517,18 @@ def show_picker_grid(strategy="Trend"):
             border: 1px solid #eee;
             text-align: left;
         }
+        .stats-box {
+            background-color: #f0f8ff;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #cce5ff;
+            font-size: 0.85em;
+            margin-bottom: 15px;
+        }
     </style>
     """, unsafe_allow_html=True)
     
+    # Grid Headers
     st.markdown(f"""
     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
         <div style="width:48%">
@@ -517,6 +542,9 @@ def show_picker_grid(strategy="Trend"):
     </div>
     """, unsafe_allow_html=True)
     
+    # ------------------
+    # DISPLAY PICKER
+    # ------------------
     picks_2 = []
     picks_3 = []
     
@@ -538,12 +566,12 @@ def show_picker_grid(strategy="Trend"):
         if pop3: picks_3 = random.choices(pop3, weights=w3, k=3)
         
         counts_2 = [counter_2[p] for p in picks_2]
+        # 如果是模拟的，count就是0
         counts_3 = [counter_3.get(p, 0) for p in picks_3]
         
         for i in range(3):
             reason_txt = T['reason'].format(counts_3[i])
-            if is_simulated_3:
-                reason_txt = "Data Error"
+            if is_simulated_3: reason_txt = "Data Error"
             
             html = f"""
             <div class="custom-grid-container">
@@ -556,40 +584,6 @@ def show_picker_grid(strategy="Trend"):
                     <div class="metric-label">{T['rec_label_trend'].format(i+1)}</div>
                     <div class="metric-value">{picks_3[i]}</div>
                     <div class="metric-delta">↑ {reason_txt}</div>
-                </div>
-            </div>
-            """
-            st.markdown(html, unsafe_allow_html=True)
-
-    elif strategy == "Hot":
-        # Top 3 most common
-        top2 = counter_2.most_common(3)
-        picks_2 = [x[0] for x in top2]
-        counts_2 = [x[1] for x in top2]
-        # Pad if less than 3
-        while len(picks_2) < 3:
-            picks_2.append("--")
-            counts_2.append(0)
-
-        top3 = counter_3.most_common(3)
-        picks_3 = [x[0] for x in top3]
-        counts_3 = [x[1] for x in top3]
-        while len(picks_3) < 3:
-            picks_3.append("--")
-            counts_3.append(0)
-
-        for i in range(3):
-            html = f"""
-            <div class="custom-grid-container">
-                <div class="custom-metric-card">
-                    <div class="metric-label">{T.get('rec_label_hot', 'Hot').format(i+1)}</div>
-                    <div class="metric-value">{picks_2[i]}</div>
-                    <div class="metric-delta">🔥 {T['reason'].format(counts_2[i])}</div>
-                </div>
-                <div class="custom-metric-card">
-                    <div class="metric-label">{T.get('rec_label_hot', 'Hot').format(i+1)}</div>
-                    <div class="metric-value">{picks_3[i]}</div>
-                    <div class="metric-delta">🔥 {T['reason'].format(counts_3[i])}</div>
                 </div>
             </div>
             """
@@ -613,22 +607,47 @@ def show_picker_grid(strategy="Trend"):
             </div>
             """
             st.markdown(html, unsafe_allow_html=True)
+            
+    # ------------------
+    # DISPLAY STATISTICS (Hot/Cold)
+    # ------------------
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Get Top/Bottom stats
+    mc2 = counter_2.most_common()
+    mc3 = counter_3.most_common()
+    
+    if mc2:
+        hot2 = ", ".join([f"{k}({v})" for k,v in mc2[:5]])
+        cold2 = ", ".join([f"{k}({v})" for k,v in mc2[-5:]])
+    else:
+        hot2, cold2 = "-", "-"
+        
+    if mc3:
+        hot3 = ", ".join([f"{k}({v})" for k,v in mc3[:5]])
+        cold3 = ", ".join([f"{k}({v})" for k,v in mc3[-5:]])
+    else:
+        hot3, cold3 = "-", "-"
+        
+    st.markdown(f"""
+    <div class="stats-box">
+        <strong>{T['stats_hot']}</strong><br>
+        2D: {hot2}<br>
+        3D: {hot3}<br><br>
+        <strong>{T['stats_cold']}</strong><br>
+        2D: {cold2}<br>
+        3D: {cold3}
+    </div>
+    """, unsafe_allow_html=True)
+
 
 with tab1:
     st.write(T["trend_desc"])
     show_picker_grid("Trend")
 
-if tab3:
-    with tab2:
-        st.write(T.get("hot_desc", "Most frequent numbers."))
-        show_picker_grid("Hot")
-    with tab3:
-        st.write(T["random_desc"])
-        show_picker_grid("Random")
-else:
-    with tab2:
-        st.write(T["random_desc"])
-        show_picker_grid("Random")
+with tab2:
+    st.write(T["random_desc"])
+    show_picker_grid("Random")
 
 # -----------------------------------------------
 # 2. 数学表 (Math Table)
@@ -753,7 +772,8 @@ st.markdown(f"""
     <div class='section-header'>{T['sim_title_main']}</div>
     <div class='section-sub'>{T['sim_title_sub']}</div>
 """, unsafe_allow_html=True)
-st.markdown(T["sim_desc_long"]) # Use longer desc
+st.markdown(T["sim_desc_long"]) 
+st.info(T["sim_intro"]) # Expanded Intro
 
 if st.button(T["sim_btn"]):
     years_mc = 5
@@ -820,12 +840,10 @@ chi2, p_value = stats.chisquare(obs, f_exp=exp)
 degrees_of_freedom = 99
 critical_value = stats.chi2.ppf(0.95, degrees_of_freedom)
 
-# Fix HTML rendering by pre-calculating the class and message
+# Fix HTML rendering issues by removing indentation inside the string
 res_class = "sci-conclusion-pass" if p_value > 0.05 else "sci-conclusion-fail"
 res_msg = T['sci_res_pass'] if p_value > 0.05 else T['sci_res_fail']
 
-# Pure HTML string without complex f-string nesting inside style blocks
-# Pure HTML string without complex f-string nesting inside style blocks
 html_report = f"""
 <div class="sci-box">
     <div class="sci-title">{T['sci_title']}</div>
@@ -841,18 +859,19 @@ html_report = f"""
         <span>{T['sci_crit']}</span>
         <span class="sci-val">{critical_value:.2f}</span>
     </div>
-    
     <div class="{res_class}">
         {res_msg}
     </div>
     <div class="sci-desc">
         {T['sci_exp_pass']}
     </div>
-        <div class="sci-advice">
+     <div class="sci-advice">
         {T['sci_advice']}
     </div>
 </div>
 """
+# Ensure no extra whitespace at start
+html_report = html_report.strip()
 
 st.markdown(html_report, unsafe_allow_html=True)
 
