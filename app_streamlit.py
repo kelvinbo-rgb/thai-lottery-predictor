@@ -196,16 +196,20 @@ LANG = {
         "data_loaded": "💾 数据已加载",
         "data_total_fmt": " (共 {} 期)",
         "data_latest": "最新: ",
+        "data_latest_detail": "日期: {} | 一等奖: {} | 末两位: {}", 
         "tab_trend": "🔥 趋势策略 (Trend)",
+        "tab_hot": "🏆 热门号码 (Hot)",
         "tab_random": "🧪 随机策略 (Random)",
-        "trend_desc": "基于历史出现频率最高的号码推荐",
-        "random_desc": "完全数学随机推荐 (承认独立概率)",
+        "trend_desc": "利用加权随机算法，基于历史“热度”进行推荐。虽然每次摇奖独立，但短期内的统计偏差可能会持续。",
+        "hot_desc": "统计历史上出现频率最高的号码。这些是名副其实的“冠军号码”。",
+        "random_desc": "完全数学随机推荐 (承认独立概率)。这是最科学的玩法，因为彩票本质是随机游走。",
         "rec_label_trend": "推荐 ({})",
+        "rec_label_hot": "热门 ({})",
         "rec_label_radom": "随机 ({})",
         "reason": "出现 {} 次",
         "reason_rnd": "纯随机",
         "ev_title": "📊 奖金结构与数学真相",
-        "ev_desc": "这是彩票的真实价值表。",
+        "ev_desc": "这是彩票的真实价值表。了解由于“抽水”导致的数学劣势。",
         "ev_col_prize": "奖项",
         "ev_col_rule": "规则",
         "ev_col_amount": "奖金",
@@ -405,7 +409,18 @@ if df.empty:
 # 数据加载显示
 total_str = T["data_total_fmt"].format(len(df))
 st.success(f"{T['data_loaded']}{total_str}")
-st.text(f"{T['data_latest']} {df.iloc[0]['date']}")
+
+# 显示最新一期详细数据
+if "data_latest_detail" in T:
+    latest_row = df.iloc[0]
+    detail_str = T["data_latest_detail"].format(
+        latest_row['date'], 
+        latest_row.get('prize_1st', 'N/A'), 
+        latest_row.get('prize_2digits', 'N/A')
+    )
+    st.info(detail_str)
+else:
+    st.text(f"{T['data_latest']} {df.iloc[0]['date']}")
 
 # -----------------------------------------------
 # 数据处理核心 (Robust Parsing)
@@ -464,7 +479,11 @@ counter_3 = collections.Counter(all_3digits)
 # 1. 选号助手 (Smart Picker)
 # -----------------------------------------------
 st.divider()
-tab1, tab2 = st.tabs([T["tab_trend"], T["tab_random"]])
+if "tab_hot" in T:
+    tab1, tab2, tab3 = st.tabs([T["tab_trend"], T["tab_hot"], T["tab_random"]])
+else:
+    tab1, tab2 = st.tabs([T["tab_trend"], T["tab_random"]])
+    tab3 = None
 
 def show_picker_grid(strategy="Trend"):
     st.markdown("""
@@ -519,12 +538,9 @@ def show_picker_grid(strategy="Trend"):
         if pop3: picks_3 = random.choices(pop3, weights=w3, k=3)
         
         counts_2 = [counter_2[p] for p in picks_2]
-        # 如果是模拟的，count就是0
         counts_3 = [counter_3.get(p, 0) for p in picks_3]
         
         for i in range(3):
-            # Show "No Data" count if simulated, otherwise real count
-            # Note: T['reason'] is like "Run {} times"
             reason_txt = T['reason'].format(counts_3[i])
             if is_simulated_3:
                 reason_txt = "Data Error"
@@ -540,6 +556,40 @@ def show_picker_grid(strategy="Trend"):
                     <div class="metric-label">{T['rec_label_trend'].format(i+1)}</div>
                     <div class="metric-value">{picks_3[i]}</div>
                     <div class="metric-delta">↑ {reason_txt}</div>
+                </div>
+            </div>
+            """
+            st.markdown(html, unsafe_allow_html=True)
+
+    elif strategy == "Hot":
+        # Top 3 most common
+        top2 = counter_2.most_common(3)
+        picks_2 = [x[0] for x in top2]
+        counts_2 = [x[1] for x in top2]
+        # Pad if less than 3
+        while len(picks_2) < 3:
+            picks_2.append("--")
+            counts_2.append(0)
+
+        top3 = counter_3.most_common(3)
+        picks_3 = [x[0] for x in top3]
+        counts_3 = [x[1] for x in top3]
+        while len(picks_3) < 3:
+            picks_3.append("--")
+            counts_3.append(0)
+
+        for i in range(3):
+            html = f"""
+            <div class="custom-grid-container">
+                <div class="custom-metric-card">
+                    <div class="metric-label">{T.get('rec_label_hot', 'Hot').format(i+1)}</div>
+                    <div class="metric-value">{picks_2[i]}</div>
+                    <div class="metric-delta">🔥 {T['reason'].format(counts_2[i])}</div>
+                </div>
+                <div class="custom-metric-card">
+                    <div class="metric-label">{T.get('rec_label_hot', 'Hot').format(i+1)}</div>
+                    <div class="metric-value">{picks_3[i]}</div>
+                    <div class="metric-delta">🔥 {T['reason'].format(counts_3[i])}</div>
                 </div>
             </div>
             """
@@ -568,9 +618,17 @@ with tab1:
     st.write(T["trend_desc"])
     show_picker_grid("Trend")
 
-with tab2:
-    st.write(T["random_desc"])
-    show_picker_grid("Random")
+if tab3:
+    with tab2:
+        st.write(T.get("hot_desc", "Most frequent numbers."))
+        show_picker_grid("Hot")
+    with tab3:
+        st.write(T["random_desc"])
+        show_picker_grid("Random")
+else:
+    with tab2:
+        st.write(T["random_desc"])
+        show_picker_grid("Random")
 
 # -----------------------------------------------
 # 2. 数学表 (Math Table)
@@ -767,32 +825,33 @@ res_class = "sci-conclusion-pass" if p_value > 0.05 else "sci-conclusion-fail"
 res_msg = T['sci_res_pass'] if p_value > 0.05 else T['sci_res_fail']
 
 # Pure HTML string without complex f-string nesting inside style blocks
+# Pure HTML string without complex f-string nesting inside style blocks
 html_report = f"""
-    <div class="sci-box">
-        <div class="sci-title">{T['sci_title']}</div>
-        <div class="sci-row">
-            <span>{T['sci_samples']}</span>
-            <span class="sci-val">{len(df)}</span>
-        </div>
-        <div class="sci-row">
-            <span>{T['sci_stat']}</span>
-            <span class="sci-val">{chi2:.2f}</span>
-        </div>
-        <div class="sci-row">
-            <span>{T['sci_crit']}</span>
-            <span class="sci-val">{critical_value:.2f}</span>
-        </div>
-        
-        <div class="{res_class}">
-            {res_msg}
-        </div>
-        <div class="sci-desc">
-            {T['sci_exp_pass']}
-        </div>
-         <div class="sci-advice">
-            {T['sci_advice']}
-        </div>
+<div class="sci-box">
+    <div class="sci-title">{T['sci_title']}</div>
+    <div class="sci-row">
+        <span>{T['sci_samples']}</span>
+        <span class="sci-val">{len(df)}</span>
     </div>
+    <div class="sci-row">
+        <span>{T['sci_stat']}</span>
+        <span class="sci-val">{chi2:.2f}</span>
+    </div>
+    <div class="sci-row">
+        <span>{T['sci_crit']}</span>
+        <span class="sci-val">{critical_value:.2f}</span>
+    </div>
+    
+    <div class="{res_class}">
+        {res_msg}
+    </div>
+    <div class="sci-desc">
+        {T['sci_exp_pass']}
+    </div>
+        <div class="sci-advice">
+        {T['sci_advice']}
+    </div>
+</div>
 """
 
 st.markdown(html_report, unsafe_allow_html=True)
