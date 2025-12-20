@@ -13,105 +13,109 @@ import ast # 用于解析 ['123', '456'] 格式的字符串
 # ------------------------------------------------------------
 st.set_page_config(page_title="Thai Lottery", page_icon="💰", layout="centered")
 
+# Helper function to strip all leading whitespace from HTML lines
+def clean_html(html_str):
+    return "\n".join([line.strip() for line in html_str.split("\n")])
+
 # 强制去除顶部留白 + 优化移动端显示
-st.markdown("""
+st.markdown(clean_html("""
 <style>
-    .block-container {
-        padding-top: 2.5rem !important;
-        padding-bottom: 2rem !important;
-    }
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    h1 {
-        padding-bottom: 0px !important;
-    }
-    .section-header {
-        font-size: 1.3em;
-        font-weight: 600;
-        margin-bottom: 0;
-    }
-    .section-sub {
-        font-size: 0.9em;
-        color: #666;
-        margin-top: -5px;
-        margin-bottom: 15px;
-        display: block;
-    }
-    /* Smart Picker 样式 */
-    .custom-grid-container {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-    }
-    .custom-metric-card {
-        width: 98%; 
-        background-color: #f9f9f9; 
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #eee;
-        text-align: left;
-    }
-    .metric-label { font-size: 0.8em; color: #666; margin-bottom: 2px; }
-    .metric-value { font-size: 1.8em; font-weight: 700; color: #333; line-height: 1.2; }
-    .metric-delta { font-size: 0.8em; color: #28a745; font-weight: 500; }
-    .grid-header { font-size: 1.0em; font-weight: 600; color: #333; }
-    .grid-sub { font-size: 0.75em; color: #888; font-weight: 400; margin-bottom: 8px; }
+.block-container {
+padding-top: 2.5rem !important;
+padding-bottom: 2rem !important;
+}
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+h1 {
+padding-bottom: 0px !important;
+}
+.section-header {
+font-size: 1.3em;
+font-weight: 600;
+margin-bottom: 0;
+}
+.section-sub {
+font-size: 0.9em;
+color: #666;
+margin-top: -5px;
+margin-bottom: 15px;
+display: block;
+}
+/* Smart Picker 样式 */
+.custom-grid-container {
+display: flex;
+justify-content: space-between;
+margin-bottom: 10px;
+}
+.custom-metric-card {
+width: 98%; 
+background-color: #f9f9f9; 
+padding: 10px;
+border-radius: 8px;
+border: 1px solid #eee;
+text-align: left;
+}
+.metric-label { font-size: 0.8em; color: #666; margin-bottom: 2px; }
+.metric-value { font-size: 1.8em; font-weight: 700; color: #333; line-height: 1.2; }
+.metric-delta { font-size: 0.8em; color: #28a745; font-weight: 500; }
+.grid-header { font-size: 1.0em; font-weight: 600; color: #333; }
+.grid-sub { font-size: 0.75em; color: #888; font-weight: 400; margin-bottom: 8px; }
     
-    /* 净盈亏 样式 (Backtest) */
-    .net-profit-box-bt {
-        padding: 5px 0px;
-    }
-    .net-profit-label-bt { font-size: 0.85em; color: #666; }
-    .net-profit-value-bt { font-size: 1.2em; font-weight: 700; }
+/* 净盈亏 样式 (Backtest) */
+.net-profit-box-bt {
+padding: 5px 0px;
+}
+.net-profit-label-bt { font-size: 0.85em; color: #666; }
+.net-profit-value-bt { font-size: 1.2em; font-weight: 700; }
     
-    /* 净盈亏 样式 (Monte Carlo) */
-    .net-profit-box-mc {
-        padding: 0px 0px; 
-    }
-    .net-profit-label-mc { 
-        font-size: 14px;
-        color: rgb(49, 51, 63);
-        margin-bottom: 4px;
-    }
-    .net-profit-value-mc { 
-        font-size: 2rem; 
-        font-weight: 600;
-        line-height: 1.2;
-    }
+/* 净盈亏 样式 (Monte Carlo) */
+.net-profit-box-mc {
+padding: 0px 0px; 
+}
+.net-profit-label-mc { 
+font-size: 14px;
+color: rgb(49, 51, 63);
+margin-bottom: 4px;
+}
+.net-profit-value-mc { 
+font-size: 2rem; 
+font-weight: 600;
+line-height: 1.2;
+}
 
-    .np-pos { color: #09ab3b; } 
-    .np-neg { color: #ff2b2b; } 
+.np-pos { color: #09ab3b; } 
+.np-neg { color: #ff2b2b; } 
     
-    /* 科学检验 样式 */
-    .sci-box {
-        background-color: #f0f2f6;
-        padding: 15px;
-        border-radius: 5px;
-        border-left: 4px solid #555;
-        font-family: monospace;
-        font-size: 0.9em;
-        margin-bottom: 10px;
-    }
-    .sci-title { font-weight: bold; font-size: 1.1em; color: #333; margin-bottom: 8px; border-bottom: 1px dashed #999; padding-bottom: 5px;}
-    .sci-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-    .sci-val { font-weight: bold; }
-    /* 避免 f-string 冲突，尽量少在 style 里写 {} */
-    .sci-conclusion-pass { margin-top: 10px; font-weight: bold; color: #09ab3b; }
-    .sci-conclusion-fail { margin-top: 10px; font-weight: bold; color: #ff2b2b; }
-    .sci-desc { margin-top: 5px; line-height: 1.4; }
-    .sci-advice { margin-top: 5px; color: #666; font-style: italic; }
+/* 科学检验 样式 */
+.sci-box {
+background-color: #f0f2f6;
+padding: 15px;
+border-radius: 5px;
+border-left: 4px solid #555;
+font-family: monospace;
+font-size: 0.9em;
+margin-bottom: 10px;
+}
+.sci-title { font-weight: bold; font-size: 1.1em; color: #333; margin-bottom: 8px; border-bottom: 1px dashed #999; padding-bottom: 5px;}
+.sci-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.sci-val { font-weight: bold; }
+/* 避免 f-string 冲突，尽量少在 style 里写 {} */
+.sci-conclusion-pass { margin-top: 10px; font-weight: bold; color: #09ab3b; }
+.sci-conclusion-fail { margin-top: 10px; font-weight: bold; color: #ff2b2b; }
+.sci-desc { margin-top: 5px; line-height: 1.4; }
+.sci-advice { margin-top: 5px; color: #666; font-style: italic; }
 
-    /* Footer small - slightly larger */
-    .footer-advice {
-        text-align: center;
-        color: #888;
-        font-size: 1.0em; /* 增大一点: 0.85em -> 1.0em */
-        margin-top: 20px;
-        border-top: 1px solid #eee;
-        padding-top: 10px;
-    }
+/* Footer small - slightly larger */
+.footer-advice {
+text-align: center;
+color: #888;
+font-size: 1.0em; /* 增大一点: 0.85em -> 1.0em */
+margin-top: 20px;
+border-top: 1px solid #eee;
+padding-top: 10px;
+}
 </style>
-""", unsafe_allow_html=True)
+"""), unsafe_allow_html=True)
 
 # ------------------------------------------------------------
 # 🌍 多语言配置 / Multi-language Config
@@ -425,12 +429,12 @@ if not check_password():
 # ------------------------------------------------------------
 # 主标题 & 最新数据
 # ------------------------------------------------------------
-st.markdown(f"""
+st.markdown(clean_html(f"""
 <h1 style='text-align: center; color: #E63946; font-size: 1.8em; margin-bottom: 0px;'>
-    {T['title']}
+{T['title']}
 </h1>
 <hr style='margin-top: 5px; margin-bottom: 15px;'>
-""", unsafe_allow_html=True)
+"""), unsafe_allow_html=True)
 
 # 读取数据
 @st.cache_data
@@ -490,90 +494,90 @@ suffix_str = " ".join([str(x) for x in latest_suffix]) if latest_suffix else "-"
 st.success(f"{T['data_loaded']}{T['data_total_fmt'].format(len(df))}")
 
 # --- Official Style Latest Draw Header ---
-st.markdown(f"""
+st.markdown(clean_html(f"""
 <style>
-    .latest-draw-container {{
-        background-color: #fff;
-        border: 1px solid #ddd;
-        border-radius: 12px;
-        padding: 15px;
-        text-align: center;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }}
-    .latest-date {{
-        font-size: 1.0em;
-        color: #555;
-        margin-bottom: 15px;
-        font-weight: 500;
-    }}
-    .prize-1st-box {{
-        margin-bottom: 20px;
-    }}
-    .result-number-1st {{
-        font-size: 2.5em;
-        font-weight: 800;
-        color: #173858; /* Official Blue */
-        letter-spacing: 3px;
-    }}
-    .result-title {{
-        font-size: 0.9em;
-        color: #173858;
-        margin-bottom: 2px;
-    }}
+.latest-draw-container {{
+background-color: #fff;
+border: 1px solid #ddd;
+border-radius: 12px;
+padding: 15px;
+text-align: center;
+margin-bottom: 20px;
+box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}}
+.latest-date {{
+font-size: 1.0em;
+color: #555;
+margin-bottom: 15px;
+font-weight: 500;
+}}
+.prize-1st-box {{
+margin-bottom: 20px;
+}}
+.result-number-1st {{
+font-size: 2.5em;
+font-weight: 800;
+color: #173858; /* Official Blue */
+letter-spacing: 3px;
+}}
+.result-title {{
+font-size: 0.9em;
+color: #173858;
+margin-bottom: 2px;
+}}
     
-    /* 3-Col Layout for sub prizes */
-    .sub-prizes-row {{
-        display: flex;
-        justify-content: space-around;
-        flex-wrap: wrap; 
-        border-top: 1px solid #eee;
-        padding-top: 15px;
-    }}
-    .sub-prize-item {{
-        text-align: center;
-        min-width: 30%;
-        margin-bottom: 10px;
-    }}
-    .sub-number {{
-        font-size: 1.4em;
-        font-weight: 700;
-        color: #173858;
-        letter-spacing: 1px;
-    }}
-    .sub-number-2d {{
-        font-size: 1.6em; /* Slightly larger for 2D */
-        font-weight: 800;
-        color: #173858;
-    }}
+/* 3-Col Layout for sub prizes */
+.sub-prizes-row {{
+display: flex;
+justify-content: space-around;
+flex-wrap: wrap; 
+border-top: 1px solid #eee;
+padding-top: 15px;
+}}
+.sub-prize-item {{
+text-align: center;
+min-width: 30%;
+margin-bottom: 10px;
+}}
+.sub-number {{
+font-size: 1.4em;
+font-weight: 700;
+color: #173858;
+letter-spacing: 1px;
+}}
+.sub-number-2d {{
+font-size: 1.6em; /* Slightly larger for 2D */
+font-weight: 800;
+color: #173858;
+}}
 </style>
 
 <div class="latest-draw-container">
-    <div class="latest-date">{T['data_latest'].format(latest_date_str)}</div>
+<div class="latest-date">{T['data_latest'].format(latest_date_str)}</div>
     
-    <!-- 1st Prize -->
-    <div class="prize-1st-box">
-        <div class="result-title">{T['latest_1st_title']}</div>
-        <div class="result-number-1st">{latest_1st}</div>
-    </div>
-    
-    <!-- Sub Prizes -->
-    <div class="sub-prizes-row">
-        <div class="sub-prize-item">
-            <div class="result-title">{T['latest_prefix_title']}</div>
-            <div class="sub-number">{prefix_str}</div>
-        </div>
-        <div class="sub-prize-item">
-            <div class="result-title">{T['latest_suffix_title']}</div>
-            <div class="sub-number">{suffix_str}</div>
-        </div>
-        <div class="sub-prize-item">
-            <div class="result-title">{T['latest_2d_title']}</div>
-            <div class="sub-number sub-number-2d">{latest_2d}</div>
-        </div>
-    </div>
+<!-- 1st Prize -->
+<div class="prize-1st-box">
+<div class="result-title">{T['latest_1st_title']}</div>
+<div class="result-number-1st">{latest_1st}</div>
 </div>
-""", unsafe_allow_html=True)
+    
+<!-- Sub Prizes -->
+<div class="sub-prizes-row">
+<div class="sub-prize-item">
+<div class="result-title">{T['latest_prefix_title']}</div>
+<div class="sub-number">{prefix_str}</div>
+</div>
+<div class="sub-prize-item">
+<div class="result-title">{T['latest_suffix_title']}</div>
+<div class="sub-number">{suffix_str}</div>
+</div>
+<div class="sub-prize-item">
+<div class="result-title">{T['latest_2d_title']}</div>
+<div class="sub-number sub-number-2d">{latest_2d}</div>
+</div>
+</div>
+</div>
+"""), unsafe_allow_html=True)
 
 
 # -----------------------------------------------
@@ -767,10 +771,10 @@ st.info(T["ev_conclusion_text"].format(total_ev, loss))
 # 3. 详细历史回测 (Detailed Backtest)
 # -----------------------------------------------
 st.divider()
-st.markdown(f"""
+st.markdown(clean_html(f"""
 <div class='section-header'>{T['bt_title_main']}</div>
 <div class='section-sub'>{T['bt_title_sub']}</div>
-""", unsafe_allow_html=True)
+"""), unsafe_allow_html=True)
 
 years_back = st.slider(T["bt_years_label"], 1, 10, 5)
 
@@ -845,10 +849,10 @@ if st.button(T["bt_btn"]):
 # 4. Monte Carlo Simulation
 # -----------------------------------------------
 st.divider()
-st.markdown(f"""
+st.markdown(clean_html(f"""
 <div class='section-header'>{T['sim_title_main']}</div>
 <div class='section-sub'>{T['sim_title_sub']}</div>
-""", unsafe_allow_html=True)
+"""), unsafe_allow_html=True)
 st.markdown(T["sim_desc_long"]) 
 st.info(T["sim_intro"]) # Expanded Intro
 
@@ -901,10 +905,10 @@ if st.button(T["sim_btn"]):
 # 5. Scientific Validation (Chi-Square) - Exact Fix
 # -----------------------------------------------
 st.divider()
-st.markdown(f"""
+st.markdown(clean_html(f"""
 <div class='section-header'>{T['val_title_main']}</div>
 <div class='section-sub'>{T['val_title_sub']}</div>
-""", unsafe_allow_html=True)
+"""), unsafe_allow_html=True)
 
 observed_counts = collections.Counter(all_2digits)
 for i in range(100):
@@ -921,32 +925,32 @@ critical_value = stats.chi2.ppf(0.95, degrees_of_freedom)
 res_class = "sci-conclusion-pass" if p_value > 0.05 else "sci-conclusion-fail"
 res_msg = T['sci_res_pass'] if p_value > 0.05 else T['sci_res_fail']
 
-html_report = f"""
+html_report = clean_html(f"""
 <div class="sci-box">
-    <div class="sci-title">{T['sci_title']}</div>
-    <div class="sci-row">
-        <span>{T['sci_samples']}</span>
-        <span class="sci-val">{len(df)}</span>
-    </div>
-    <div class="sci-row">
-        <span>{T['sci_stat']}</span>
-        <span class="sci-val">{chi2:.2f}</span>
-    </div>
-    <div class="sci-row">
-        <span>{T['sci_crit']}</span>
-        <span class="sci-val">{critical_value:.2f}</span>
-    </div>
-    <div class="{res_class}">
-        {res_msg}
-    </div>
-    <div class="sci-desc">
-        {T['sci_exp_pass']}
-    </div>
-     <div class="sci-advice">
-        {T['sci_advice']}
-    </div>
+<div class="sci-title">{T['sci_title']}</div>
+<div class="sci-row">
+<span>{T['sci_samples']}</span>
+<span class="sci-val">{len(df)}</span>
 </div>
-"""
+<div class="sci-row">
+<span>{T['sci_stat']}</span>
+<span class="sci-val">{chi2:.2f}</span>
+</div>
+<div class="sci-row">
+<span>{T['sci_crit']}</span>
+<span class="sci-val">{critical_value:.2f}</span>
+</div>
+<div class="{res_class}">
+{res_msg}
+</div>
+<div class="sci-desc">
+{T['sci_exp_pass']}
+</div>
+<div class="sci-advice">
+{T['sci_advice']}
+</div>
+</div>
+""")
 # Ensure no extra whitespace at start
 html_report = html_report.strip()
 
@@ -956,9 +960,9 @@ st.markdown(html_report, unsafe_allow_html=True)
 # -----------------------------------------------
 # Footer (Larger font)
 # -----------------------------------------------
-st.markdown(f"""
+st.markdown(clean_html(f"""
 <div class="footer-advice">
-    {T['final_rec']}<br>
-    {T['footer']}
+{T['final_rec']}<br>
+{T['footer']}
 </div>
-""", unsafe_allow_html=True)
+"""), unsafe_allow_html=True)
