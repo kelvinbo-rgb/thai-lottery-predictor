@@ -44,7 +44,7 @@ st.markdown("""
             margin-bottom: 10px;
         }
         .custom-metric-card {
-            width: 48%; 
+            width: 98%; 
             background-color: #f9f9f9; 
             padding: 10px;
             border-radius: 8px;
@@ -123,10 +123,14 @@ LANG = {
         "password_error": "😕 รหัสผ่านผิด",
         "data_loaded": "💾 โหลดข้อมูลแล้ว",
         "data_total_fmt": " (ทั้งหมด {} งวด)",
-        "data_latest": "งวดล่าสุด ({}): ",
-        "tab_trend": "🔥 Trend (กระแส)",
-        "tab_random": "🧪 Random (สุ่ม)",
-        "tab_hot": "📊 Hot (สถิติ)",
+        "data_latest": "งวดประจำวันที่ {}",
+        "latest_1st_title": "รางวัลที่ 1",
+        "latest_prefix_title": "เลขหน้า 3 ตัว",
+        "latest_suffix_title": "เลขท้าย 3 ตัว",
+        "latest_2d_title": "เลขท้าย 2 ตัว",
+        "tab_trend": "🔥 Trend",
+        "tab_random": "🧪 Random",
+        "tab_hot": "📊 Hot",
         "trend_desc": "🧬 กฎแห่งแรงเฉื่อย (Inertia)\nเชื่อว่าตัวเลขที่มี 'พลังงาน' จะยังคงออกซ้ำ",
         "random_desc": "🎲 กฎแห่งความโกลาหล (Entropy)\nทุกตัวเลขมีโอกาสเท่ากัน ไม่มีใครรู้อนาคต",
         "hot_desc": "📈 กฎจำนวนมาก (Law of Large Numbers)\nสถิติระยะยาวชี้เป้าตัวเลขที่แข็งแกร่งที่สุด",
@@ -206,10 +210,14 @@ LANG = {
         "password_error": "😕 密码错误",
         "data_loaded": "💾 数据已加载",
         "data_total_fmt": " (共 {} 期)",
-        "data_latest": "最新第 {} 期 : ",
-        "tab_trend": "🔥 趋势策略 (Trend)",
-        "tab_random": "🧪 随机策略 (Random)",
-        "tab_hot": "📊 热门策略 (Hot)",
+        "data_latest": "最新开奖日期: {}",
+        "latest_1st_title": "一等奖",
+        "latest_prefix_title": "前三位数",
+        "latest_suffix_title": "后三位数",
+        "latest_2d_title": "两位数",
+        "tab_trend": "🔥 趋势策略",
+        "tab_random": "🧪 随机策略",
+        "tab_hot": "📊 热门策略",
         "trend_desc": "**🧬 历史惯性定律 (Inertia)**\n假设数字存在“热度”，近期频繁出现的数字具有动量，未来可能继续出现。",
         "random_desc": "**🎲 最大熵原理 (Entropy)**\n承认每次开奖都是独立事件，使用量子级真随机算法，消除人为偏见。",
         "hot_desc": "**📈 大数定律 (Law of Large Numbers)**\n基于长期大样本统计，筛选出历史概率分布中表现最强势的“黄金号码”。",
@@ -289,10 +297,14 @@ LANG = {
         "password_error": "😕 Incorrect Password",
         "data_loaded": "💾 Data Loaded",
         "data_total_fmt": " (Total {})",
-        "data_latest": "Latest Draw ({}): ",
-        "tab_trend": "🔥 Trend Strategy",
-        "tab_random": "🧪 Random Strategy",
-        "tab_hot": "📊 Hot Strategy",
+        "data_latest": "Draw Date: {}",
+        "latest_1st_title": "1st Prize",
+        "latest_prefix_title": "3-Digit Prefix",
+        "latest_suffix_title": "3-Digit Suffix",
+        "latest_2d_title": "2 Digits",
+        "tab_trend": "🔥 Trend",
+        "tab_random": "🧪 Random",
+        "tab_hot": "📊 Hot",
         "trend_desc": "**🧬 Theory of Inertia**\nAssuming numbers follow momentum. What has happened frequently may continue to happen.",
         "random_desc": "**🎲 Theory of Entropy**\nRecognizing that each draw is independent. True chaos is the only fairness.",
         "hot_desc": "**📈 Law of Large Numbers**\nIdentifying the strongest numbers from long-term historical distribution.",
@@ -364,7 +376,7 @@ LANG = {
         "sci_advice": "Recommendation: Use 'Random Strategy'.",
         "sci_res_fail": "❌ [Conclusion] Deviation detected",
         "final_rec": "💬 Final Advice: Treat lottery as consumption, not investment. | Good Luck!",
-        "footer": "🔒 Private Access Only"
+        "footer": "🔒 Private Access Only | 888"
     }
 }
 
@@ -447,8 +459,121 @@ latest_date_str = latest['date']
 latest_1st = str(latest['prize_1st']).zfill(6)
 latest_2d = str(latest['prize_2digits']).zfill(2)
 
+# 解析 前三 / 后三
+latest_prefix = [] # item is string
+latest_suffix = [] # item is string
+
+# prefix parsing (prize_pre_3digit)
+if 'prize_pre_3digit' in latest:
+    raw_pre = str(latest['prize_pre_3digit']).strip()
+    if raw_pre.startswith('[') and raw_pre.endswith(']'):
+         try: latest_prefix = ast.literal_eval(raw_pre)
+         except: latest_prefix = []
+    elif raw_pre.isdigit(): latest_prefix = [raw_pre]
+
+# suffix parsing (prize_sub_3digits)
+if 'prize_sub_3digits' in latest:
+    raw_sub = str(latest['prize_sub_3digits']).strip()
+    if raw_sub.startswith('[') and raw_sub.endswith(']'):
+         try: latest_suffix = ast.literal_eval(raw_sub)
+         except: latest_suffix = []
+    elif raw_sub.isdigit(): latest_suffix = [raw_sub]
+
+# Ensure lists (fallback)
+if not isinstance(latest_prefix, list): latest_prefix = []
+if not isinstance(latest_suffix, list): latest_suffix = []
+
+# Format display strings
+prefix_str = " ".join([str(x) for x in latest_prefix]) if latest_prefix else "-"
+suffix_str = " ".join([str(x) for x in latest_suffix]) if latest_suffix else "-"
+
 st.success(f"{T['data_loaded']}{T['data_total_fmt'].format(len(df))}")
-st.info(f"📅 {T['data_latest'].format(latest_date_str)} **{latest_1st}** (1st) | **{latest_2d}** (2D)")
+
+# --- Official Style Latest Draw Header ---
+st.markdown(f"""
+    <style>
+        .latest-draw-container {{
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }}
+        .latest-date {{
+            font-size: 1.0em;
+            color: #555;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }}
+        .prize-1st-box {{
+            margin-bottom: 20px;
+        }}
+        .result-number-1st {{
+            font-size: 2.5em;
+            font-weight: 800;
+            color: #173858; /* Official Blue */
+            letter-spacing: 3px;
+        }}
+        .result-title {{
+            font-size: 0.9em;
+            color: #173858;
+            margin-bottom: 2px;
+        }}
+        
+        /* 3-Col Layout for sub prizes */
+        .sub-prizes-row {{
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap; 
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }}
+        .sub-prize-item {{
+            text-align: center;
+            min-width: 30%;
+            margin-bottom: 10px;
+        }}
+        .sub-number {{
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #173858;
+            letter-spacing: 1px;
+        }}
+        .sub-number-2d {{
+            font-size: 1.6em; /* Slightly larger for 2D */
+            font-weight: 800;
+            color: #173858;
+        }}
+    </style>
+    
+    <div class="latest-draw-container">
+        <div class="latest-date">{T['data_latest'].format(latest_date_str)}</div>
+        
+        <!-- 1st Prize -->
+        <div class="prize-1st-box">
+            <div class="result-title">{T['latest_1st_title']}</div>
+            <div class="result-number-1st">{latest_1st}</div>
+        </div>
+        
+        <!-- Sub Prizes -->
+        <div class="sub-prizes-row">
+            <div class="sub-prize-item">
+                <div class="result-title">{T['latest_prefix_title']}</div>
+                <div class="sub-number">{prefix_str}</div>
+            </div>
+            <div class="sub-prize-item">
+                <div class="result-title">{T['latest_suffix_title']}</div>
+                <div class="sub-number">{suffix_str}</div>
+            </div>
+            <div class="sub-prize-item">
+                <div class="result-title">{T['latest_2d_title']}</div>
+                <div class="sub-number sub-number-2d">{latest_2d}</div>
+            </div>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
 
 # -----------------------------------------------
@@ -515,38 +640,51 @@ tab1, tab2, tab3 = st.tabs([T["tab_trend"], T["tab_random"], T["tab_hot"]])
 def show_picker_grid_card(picks_2, picks_3, reasons_2, reasons_3, desc):
     st.markdown(f"<div style='margin-bottom:15px; font-size:0.95em; color:#444;'>{desc}</div>", unsafe_allow_html=True)
     
-    # 2 Digits / 3 Digits Layout (Side by Side columns)
-    c_left, c_right = st.columns(2)
+    # 2 Digits / 3 Digits Layout Custom Flexbox for Mobile Support
+    # Left Block: 2 Digits
     
-    with c_left:
-        st.markdown(f"<div class='grid-header'>{T['col_2d_title']}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='grid-sub'>{T['prob_2d']}</div>", unsafe_allow_html=True)
-        for i in range(3):
-            p = picks_2[i] if i < len(picks_2) else "--"
-            r = reasons_2[i] if i < len(reasons_2) else ""
-            delta_html = f"<div class='metric-delta'>↑ {r}</div>" if r else ""
-            st.markdown(f"""
-            <div class="custom-metric-card" style="width:100%; margin-bottom:10px;">
-                <div class="metric-label">{T['rec_label_trend'].format(i+1) if 'Trend' in desc else (T['rec_label_radom'].format(i+1) if 'Random' in desc else T['rec_label_hot'].format(i+1))}</div>
-                <div class="metric-value">{p}</div>
-                {delta_html}
-            </div>
-            """, unsafe_allow_html=True)
-            
-    with c_right:
-        st.markdown(f"<div class='grid-header'>{T['col_3d_title']}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='grid-sub'>{T['prob_3d']}</div>", unsafe_allow_html=True)
-        for i in range(3):
-            p = picks_3[i] if i < len(picks_3) else "--"
-            r = reasons_3[i] if i < len(reasons_3) else ""
-            delta_html = f"<div class='metric-delta'>↑ {r}</div>" if r else ""
-            st.markdown(f"""
-            <div class="custom-metric-card" style="width:100%; margin-bottom:10px;">
-                <div class="metric-label">{T['rec_label_trend'].format(i+1) if 'Trend' in desc else (T['rec_label_radom'].format(i+1) if 'Random' in desc else T['rec_label_hot'].format(i+1))}</div>
-                <div class="metric-value">{p}</div>
-                {delta_html}
-            </div>
-            """, unsafe_allow_html=True)
+    left_html = f"""<div style="flex:1; margin-right:5px;">
+        <div class='grid-header'>{T['col_2d_title']}</div>
+        <div class='grid-sub'>{T['prob_2d']}</div>
+    """
+    for i in range(3):
+        p = picks_2[i] if i < len(picks_2) else "--"
+        r = reasons_2[i] if i < len(reasons_2) else ""
+        delta_html = f"<div class='metric-delta'>↑ {r}</div>" if r else ""
+        left_html += f"""
+        <div class="custom-metric-card" style="width:100%; margin-bottom:10px;">
+            <div class="metric-label">{T['rec_label_trend'].format(i+1) if 'Trend' in desc else (T['rec_label_radom'].format(i+1) if 'Random' in desc else T['rec_label_hot'].format(i+1))}</div>
+            <div class="metric-value">{p}</div>
+            {delta_html}
+        </div>
+        """
+    left_html += "</div>"
+    
+    # Right Block: 3 Digits
+    right_html = f"""<div style="flex:1; margin-left:5px;">
+        <div class='grid-header'>{T['col_3d_title']}</div>
+        <div class='grid-sub'>{T['prob_3d']}</div>
+    """
+    for i in range(3):
+        p = picks_3[i] if i < len(picks_3) else "--"
+        r = reasons_3[i] if i < len(reasons_3) else ""
+        delta_html = f"<div class='metric-delta'>↑ {r}</div>" if r else ""
+        right_html += f"""
+        <div class="custom-metric-card" style="width:100%; margin-bottom:10px;">
+            <div class="metric-label">{T['rec_label_trend'].format(i+1) if 'Trend' in desc else (T['rec_label_radom'].format(i+1) if 'Random' in desc else T['rec_label_hot'].format(i+1))}</div>
+            <div class="metric-value">{p}</div>
+            {delta_html}
+        </div>
+        """
+    right_html += "</div>"
+    
+    # Container with flex
+    st.markdown(f"""
+        <div style="display:flex; flex-direction:row; justify-content:space-between;">
+            {left_html}
+            {right_html}
+        </div>
+    """, unsafe_allow_html=True)
 
 
 # --- 1. Trend Strategy Data ---
