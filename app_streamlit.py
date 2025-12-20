@@ -132,9 +132,9 @@ LANG = {
         "latest_prefix_title": "เลขหน้า 3 ตัว",
         "latest_suffix_title": "เลขท้าย 3 ตัว",
         "latest_2d_title": "เลขท้าย 2 ตัว",
-        "tab_trend": "🔥 Trend",
-        "tab_random": "🧪 Random",
-        "tab_hot": "📊 Hot",
+        "tab_trend": "🔥 แนวโน้ม",
+        "tab_random": "🧪 สุ่ม",
+        "tab_hot": "📊 เลขมาแรง",
         "trend_desc": "🧬 กฎแห่งแรงเฉื่อย (Inertia)\nเชื่อว่าตัวเลขที่มี 'พลังงาน' จะยังคงออกซ้ำ",
         "random_desc": "🎲 กฎแห่งความโกลาหล (Entropy)\nทุกตัวเลขมีโอกาสเท่ากัน ไม่มีใครรู้อนาคต",
         "hot_desc": "📈 กฎจำนวนมาก (Law of Large Numbers)\nสถิติระยะยาวชี้เป้าตัวเลขที่แข็งแกร่งที่สุด",
@@ -183,9 +183,8 @@ LANG = {
         "sim_desc": "จำลองเหตุการณ์ในอนาคตด้วยความน่าจะเป็นทางคณิตศาสตร์",
         "sim_desc_long": "โมเดลความน่าจะเป็น (Probability Model) คำนวณโอกาสถูกรางวัลทุกประเภท รวมถึงรางวัลที่ 1",
         "sim_intro": """
-        🎫 มูลค่าทางคณิตศาสตร์จริง: **48.00 บาท** (จากราคา 80 บาท)
-        💸 ขาดทุนเฉลี่ยต่อใบ: **-32.00 บาท**
-        📉 ROI ทางทฤษฎี: **-40.00%**
+        การจำลองนี้ครอบคลุมรางวัลทั้งหมดตั้งแต่ **[รางวัลที่ 1]** ถึง **[เลขท้าย 2 ตัว]** 
+        ซื้อ 1 ใบต่องวด แบบสุ่มทั้งหมด มาดูกันว่าดวงจะเป็นอย่างไร
         """,
         "sim_btn": "เริ่ม Monte Carlo",
         "sim_narration": "📝 สมมติฐาน: คุณซื้อหวยงวดละ 1 ใบ (80 บาท) ต่อเนื่องเป็นเวลา {} ปี...",
@@ -270,9 +269,8 @@ LANG = {
         "sim_desc": "基于数学期望的纯概率模拟 (含头奖)",
         "sim_desc_long": "概率模型 (Probability Model) 计算包含头奖在内的所有中奖机会。",
         "sim_intro": """
-        🎫 单张彩票真实数学价值: **48.00 THB** (含头奖等全概率)
-        💸 每买一张平均亏损: **-32.00 THB**
-        📉 理论回报率 (ROI): **-40.00%**
+        本次模拟包含了从 **【一等奖】** 到 **【末两位】** 的所有中奖可能。
+        每期买 1 张，完全随机，看看运气如何。
         """,
         "sim_btn": "运行模拟",
         "sim_narration": "📝 模拟假设: 您坚持买彩票 {} 年，每期坚持买 1 张 (80 THB)...",
@@ -357,9 +355,8 @@ LANG = {
         "sim_desc": "Pure probability simulation including Jackpot chances.",
         "sim_desc_long": "Calculates winning chances for all prizes including Jackpot.",
         "sim_intro": """
-        🎫 Real Value: **48.00 THB**
-        💸 Avg Loss: **-32.00 THB**
-        📉 Theoretical ROI: **-40.00%**
+        This simulation covers all possibilities from **[1st Prize]** to **[Last 2 Digits]**.
+        Buying 1 ticket per draw, completely random. Let's test your luck.
         """,
         "sim_btn": "Run Simulation",
         "sim_narration": "📝 Assumption: Buying 1 ticket (80 THB) per draw for {} years...",
@@ -386,21 +383,15 @@ LANG = {
 
 # 语言选择 (Top)
 if "lang_choice" not in st.session_state:
-    st.session_state["lang_choice"] = "ภาษาไทย"
+    st.session_state.lang_choice = "ภาษาไทย"
 
 c1, c2 = st.columns([3, 1])
 with c2:
-    try:
-        options = ["ภาษาไทย", "中文", "English"]
-        lang_idx = 0
-        if st.session_state["lang_choice"] == "中文": lang_idx = 1
-        elif st.session_state["lang_choice"] == "English": lang_idx = 2
-        lang_opt = st.selectbox("Language", options, index=lang_idx, label_visibility="collapsed")
-        st.session_state["lang_choice"] = lang_opt
-    except:
-        pass
+    options = ["ภาษาไทย", "中文", "English"]
+    # Fix: Use key to bind directly to session_state for one-click updates
+    st.selectbox("Language", options, key="lang_choice", label_visibility="collapsed")
 
-T = LANG[st.session_state["lang_choice"]]
+T = LANG[st.session_state.lang_choice]
 
 # ------------------------------------------------------------
 # 🔐 安全验证 (Security)
