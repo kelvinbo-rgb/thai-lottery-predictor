@@ -212,7 +212,7 @@ LANG = {
         "sponsor_desc": "หากคุณโชคดี หรือชอบแนวคิดนี้ คุณสามารถสนับสนุนได้!",
         "sponsor_alipay": "Alipay (จีน)",
         "sponsor_promptpay": "PromptPay (ไทย)",
-        "sponsor_msg": "ขอให้โชคดีและสมหวังทุกความฝันครับ!",
+        "sponsor_msg": "ขอให้โชคดีและสมหวังทุกความฝันครับ",
         "auto_update_msg": "🔄 กำลังอัปเดตข้อมูลล่าสุด..."
     },
     "中文": {
@@ -301,10 +301,10 @@ LANG = {
         "final_rec": "💬 最终建议: 将彩票视为【消费】而非【投资】。| 祝您好运!",
         "footer": " ",
         "sponsor_title": "☕ 赞助作者",
-        "sponsor_desc": "如果你的财运实现，如果你的思路多了一点提示，请给我一点赞助，我会更有动力去更新和分享，希望终有一日你我梦境成真。",
+        "sponsor_desc": "如果你的财运实现，如果你的思路多了一点提示，请给我一点赞助，我会更有动力去更新和分享，希望终有一日你我梦想成真。",
         "sponsor_alipay": "中国支付宝",
         "sponsor_promptpay": "泰国收款码",
-        "sponsor_msg": "祝终有一日你我梦境成真。",
+        "sponsor_msg": "祝终有一日你我梦想成真",
         "auto_update_msg": "🔄 检测到新一期数据，正在自动更新..."
     },
     "English": {
@@ -401,14 +401,25 @@ LANG = {
     }
 }
 
-# 语言选择 (Top)
+# 语言选择 (Custom Horizontal Flags)
 if "lang_choice" not in st.session_state:
     st.session_state.lang_choice = "ภาษาไทย"
 
-c1, c2 = st.columns([3, 1])
-with c2:
-    options = ["ภาษาไทย", "中文", "English"]
-    st.selectbox("Language", options, key="lang_choice", label_visibility="collapsed")
+# Layout for flags
+c_l, lc1, lc2, lc3 = st.columns([2, 1, 1, 1])
+
+with lc1:
+    if st.button("🇹🇭 ไทย", use_container_width=True, type="primary" if st.session_state.lang_choice == "ภาษาไทย" else "secondary"):
+        st.session_state.lang_choice = "ภาษาไทย"
+        st.rerun()
+with lc2:
+    if st.button("🇨🇳 中文", use_container_width=True, type="primary" if st.session_state.lang_choice == "中文" else "secondary"):
+        st.session_state.lang_choice = "中文"
+        st.rerun()
+with lc3:
+    if st.button("🇺🇸 EN", use_container_width=True, type="primary" if st.session_state.lang_choice == "English" else "secondary"):
+        st.session_state.lang_choice = "English"
+        st.rerun()
 
 T = LANG[st.session_state.lang_choice]
 
@@ -1112,5 +1123,8 @@ with dc2:
 st.markdown(clean_html(f"""
 <div style="text-align: center; margin-top: 15px; font-style: italic; color: #555;">
 "{T['sponsor_msg']}"
+</div>
+<div style="text-align: center; margin-top: 25px; color: #999; font-size: 0.85em; border-top: 1px solid #eee; padding-top: 15px;">
+    Kelvin Bo | Contact: <a href="mailto:kelvinbo@gmail.com" style="color: #999; text-decoration: none;">kelvinbo@gmail.com</a>
 </div>
 """), unsafe_allow_html=True)
