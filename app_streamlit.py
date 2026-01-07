@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import random
@@ -9,6 +8,8 @@ import datetime
 import ast
 import requests
 from bs4 import BeautifulSoup
+import re
+import time
 
 # ------------------------------------------------------------
 # 🎨 界面样式优化 (CSS)
@@ -424,9 +425,8 @@ with lc3:
 T = LANG[st.session_state.lang_choice]
 
 # ------------------------------------------------------------
-# 🤖 自动更新逻辑 (Auto-Scraper)
+# 🤖 自动更新逻辑 (Auto-Scraper) - 修复版 (Flexible Date)
 # ------------------------------------------------------------
-# URL of a reliable source (Sanook Lotto)
 SOURCE_URL = "https://news.sanook.com/lotto/"
 DATA_FILE = "historical_data.csv"
 
@@ -443,95 +443,107 @@ def update_dataset_if_needed():
 
     try:
         df = pd.read_csv(DATA_FILE)
-        # Parse Dates
+        # Parse Dates Safely
         def parse_dt(d):
             try: return pd.to_datetime(d, format="%m/%d/%Y")
             except: 
                 try: return pd.to_datetime(d, format="%Y-%m-%d")
                 except: return pd.NaT
         df['dt_obj'] = df['date'].apply(parse_dt)
+        if df['dt_obj'].isna().all(): return
+
         latest_date = df['dt_obj'].max()
-        
         today = datetime.datetime.now()
         
-        # Simple Logic: Check if we are past the 1st or 16th and data is missing
-        # If today is > 1st and < 16th, latest should be >= 1st
-        # If today is > 16th, latest should be >= 16th
-        
+        # --- 优化后的逻辑 ---
+        # 不再强制今天是1号或16号，只要最近数据比较旧，就尝试更新
         should_update = False
+        days_diff = (today - latest_date).days
+
+        # 1. 正常周期超过 16 天，肯定要更新
+        if days_diff >= 16:
+            should_update = True
         
-        # Check logic
-        if today.day >= 1 and latest_date.month == today.month and latest_date.year == today.year:
-            # Same month check
-            if today.day > 1 and today.day < 16:
-                # Expecting 1st
-                if latest_date.day < 1: 
-                    should_update = True
-            elif today.day > 16:
-                # Expecting 16th
-                if latest_date.day < 16:
-                    should_update = True
-        elif latest_date < today - datetime.timedelta(days=15):
-             # If data is very old (more than 15 days)
-             should_update = True
+        # 2. 如果是月初 (1-5号) 且最新数据不是本月的 -> 尝试更新
+        elif 1 <= today.day <= 5:
+            if latest_date.month != today.month:
+                should_update = True
+                
+        # 3. 如果是月中 (16-20号) 且最新数据是上半月的 -> 尝试更新
+        elif 16 <= today.day <= 20:
+             if latest_date.day < 16:
+                 should_update = True
 
         if should_update:
             with st.spinner(T["auto_update_msg"]):
                 scrape_and_append(df)
             
     except Exception as e:
-        # Silently fail or log in debug
         print(f"Update Check Error: {e}")
 
 def scrape_and_append(current_df):
     try:
-        response = requests.get(SOURCE_URL)
+        # Add headers to avoid bot detection
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(SOURCE_URL, headers=headers, timeout=10)
         if response.status_code != 200: return
 
         soup = BeautifulSoup(response.content, 'html.parser')
         
-        # Sanook specific scraping (Robust Search)
-        # 1. Date Check in Title
-        # <h1 class="title">... 16 ธันวาคม 2568 ...</h1>
+        # --- Flexible Date Parsing (Regex) ---
         title = soup.find("h1")
         date_str = ""
+        
         if title:
             text = title.get_text()
-            # Extract date
-            # simple keyword match
             month_map = get_thai_month_map()
+            
+            found_month = None
+            found_month_num = None
+            
+            # Find month
             for m_th, m_num in month_map.items():
                 if m_th in text:
-                    # found month
-                    # find day (1 or 16)
-                    day = "01"
-                    if "16" in text: day = "16"
-                    elif "1 " in text: day = "01"
-                    
-                    # find year (2568 -> 2025)
-                    # Year is usually current Thai year
-                    th_year = int(datetime.datetime.now().year) + 543
-                    if str(th_year) in text:
-                        year = str(th_year - 543)
-                    else:
-                        year = str(datetime.datetime.now().year)
-
-                    date_str = f"{m_num}/{day}/{year}" # MM/DD/YYYY to match CSV
+                    found_month = m_th
+                    found_month_num = m_num
                     break
-        
+            
+            if found_month:
+                # Find day: look for 1 or 2 digits before the month
+                # This handles "2 พฤษภาคม", "16 พฤษภาคม", etc.
+                day_match = re.search(r'(\d{1,2})\s*' + found_month, text)
+                if day_match:
+                    day_num = int(day_match.group(1))
+                    day = f"{day_num:02d}"
+                else:
+                    # Fallback
+                    day = "01" if "1 " in text else ("16" if "16" in text else "01")
+
+                # Find year: look for 4 digits starting with 25 (Thai year)
+                year_match = re.search(r'(25\d{2})', text)
+                if year_match:
+                    th_year = int(year_match.group(1))
+                    year = str(th_year - 543)
+                else:
+                    year = str(datetime.datetime.now().year)
+
+                date_str = f"{found_month_num}/{day}/{year}"
+
         if not date_str: return
         
-        # Check if date exists
-        if date_str in current_df['date'].values:
+        # Check if exists (Standardize format checks)
+        existing_dates = set(current_df['date'].values)
+        # Check standard format MM/DD/YYYY
+        if date_str in existing_dates:
             return
             
         # 2. Parse Numbers
         prize_1 = None
         prize_2d = None
         
-        # Sanook often has <div class="lotto__number--1st">763895</div>
-        # and <div class="lotto__number--last2">52</div>
-        
+        # Sanook parsing
         p1_div = soup.find("div", class_=lambda x: x and "number--1st" in x)
         if p1_div: prize_1 = p1_div.get_text().strip()
         
@@ -546,7 +558,7 @@ def scrape_and_append(current_df):
             "date": date_str,
             "prize_1st": prize_1,
             "prize_2digits": prize_2d,
-            "prize_pre_3digit": "[]", # parsing 3 digits is risky without strict classes, keep empty safe
+            "prize_pre_3digit": "[]", 
             "prize_sub_3digits": "[]"
         }
         
@@ -554,10 +566,11 @@ def scrape_and_append(current_df):
         df_new = pd.DataFrame([new_row])
         df_new.to_csv(DATA_FILE, mode='a', header=False, index=False)
         st.toast(f"Updated data for {date_str}!", icon="✅")
-        st.experimental_rerun()
+        time.sleep(1) # Allow IO to finish
+        st.rerun()
         
-    except:
-        pass
+    except Exception as e:
+        print(f"Scrape Error: {e}")
 
 # Run Auto-Update Check
 update_dataset_if_needed()
