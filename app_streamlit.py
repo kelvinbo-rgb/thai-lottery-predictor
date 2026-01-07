@@ -3,6 +3,7 @@ import pandas as pd
 import random
 import collections
 import os
+import scipy.stats as stats
 import datetime
 import ast
 import requests
@@ -11,9 +12,9 @@ import re
 import time
 
 # ------------------------------------------------------------
-# 🎨 界面样式优化 (CSS)
+# 🎨 界面样式 (原始风格)
 # ------------------------------------------------------------
-st.set_page_config(page_title="Thai Lottery AI", page_icon="💰", layout="centered")
+st.set_page_config(page_title="Thai Lottery", page_icon="💰", layout="centered")
 
 def clean_html(html_str):
     return "\n".join([line.strip() for line in html_str.split("\n")])
@@ -23,28 +24,43 @@ st.markdown(clean_html("""
 .block-container { padding-top: 2rem !important; padding-bottom: 2rem !important; }
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
+.section-header { font-size: 1.3em; font-weight: 600; margin-bottom: 0; }
+.section-sub { font-size: 0.9em; color: #666; margin-top: -5px; margin-bottom: 15px; display: block; }
 .custom-metric-card { width: 98%; background-color: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee; text-align: left; }
 .metric-label { font-size: 0.8em; color: #666; margin-bottom: 2px; }
 .metric-value { font-size: 1.8em; font-weight: 700; color: #333; line-height: 1.2; }
 .metric-delta { font-size: 0.8em; color: #28a745; font-weight: 500; }
 .grid-header { font-size: 1.0em; font-weight: 600; color: #333; }
-.status-bar { padding: 8px; margin-bottom: 10px; border-radius: 5px; font-size: 0.85em; text-align: center; }
-.status-ok { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-.status-warn { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-.status-err { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.net-profit-box-bt { padding: 5px 0px; }
+.net-profit-label-bt { font-size: 0.85em; color: #666; }
+.net-profit-value-bt { font-size: 1.2em; font-weight: 700; }
+.net-profit-box-mc { padding: 0px 0px; }
+.net-profit-label-mc { font-size: 14px; color: rgb(49, 51, 63); margin-bottom: 4px; }
+.net-profit-value-mc { font-size: 2rem; font-weight: 600; line-height: 1.2; }
+.np-pos { color: #09ab3b; } 
+.np-neg { color: #ff2b2b; } 
+.sci-box { background-color: #f0f2f6; padding: 15px; border-radius: 5px; border-left: 4px solid #555; font-family: monospace; font-size: 0.9em; margin-bottom: 10px; }
+.sci-title { font-weight: bold; font-size: 1.1em; color: #333; margin-bottom: 8px; border-bottom: 1px dashed #999; padding-bottom: 5px;}
+.sci-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.sci-val { font-weight: bold; }
+.sci-conclusion-pass { margin-top: 10px; font-weight: bold; color: #09ab3b; }
+.sci-conclusion-fail { margin-top: 10px; font-weight: bold; color: #ff2b2b; }
+.sci-desc { margin-top: 5px; line-height: 1.4; }
+.sci-advice { margin-top: 5px; color: #666; font-style: italic; }
+.footer-advice { text-align: center; color: #888; font-size: 1.0em; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }
 </style>
 """), unsafe_allow_html=True)
 
 # ------------------------------------------------------------
-# 🌍 Config (默认中文)
+# 🌍 Config
 # ------------------------------------------------------------
 LANG = {
-    "ภาษาไทย": { "title": "💰 วิเคราะห์หวยไทย (AI)", "data_latest": "งวดประจำวันที่ {}", "loading": "กำลังโหลด..." },
-    "中文": { "title": "💰 泰国彩票AI智能策略", "data_latest": "最新开奖日期: {}", "loading": "正在同步数据..." },
-    "English": { "title": "💰 Thai Lottery AI Strategy", "data_latest": "Draw Date: {}", "loading": "Loading..." }
+    "ภาษาไทย": { "title": "💰 วิเคราะห์หวยไทย (AI)", "data_latest": "งวดประจำวันที่ {}", "auto_update_msg": "กำลังตรวจสอบข้อมูล...", "err_scrape": "ไม่สามารถดึงข้อมูลได้: {}" },
+    "中文": { "title": "💰 泰国彩票AI智能策略", "data_latest": "最新开奖日期: {}", "auto_update_msg": "正在同步最新数据...", "err_scrape": "抓取失败: {}" },
+    "English": { "title": "💰 Thai Lottery AI Strategy", "data_latest": "Draw Date: {}", "auto_update_msg": "Checking for updates...", "err_scrape": "Scrape failed: {}" }
 }
 
-if "lang_choice" not in st.session_state: st.session_state.lang_choice = "中文" # Default to Chinese
+if "lang_choice" not in st.session_state: st.session_state.lang_choice = "中文"
 c_l, lc1, lc2, lc3 = st.columns([2, 1, 1, 1])
 with lc1: 
     if st.button("🇹🇭 ไทย", use_container_width=True): st.session_state.lang_choice = "ภาษาไทย"; st.rerun()
@@ -55,7 +71,7 @@ with lc3:
 T = LANG[st.session_state.lang_choice]
 
 # ------------------------------------------------------------
-# 🤖 Auto-Scraper (暴力搜索版)
+# 🤖 Auto-Scraper (修复逻辑：只抓有数据的日期)
 # ------------------------------------------------------------
 SOURCE_URL = "https://news.sanook.com/lotto/"
 DATA_FILE = "historical_data.csv"
@@ -67,95 +83,118 @@ def get_thai_month_map():
         "กันยายน": "09", "ตุลาคม": "10", "พฤศจิกายน": "11", "ธันวาคม": "12"
     }
 
-def sync_data_with_sanook():
-    status_placeholder = st.empty()
-    
+def scrape_and_append(current_df):
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
         response = requests.get(SOURCE_URL, headers=headers, timeout=10)
-        response.encoding = 'utf-8' # 强制编码
-        
-        if response.status_code != 200:
-            status_placeholder.markdown(f'<div class="status-bar status-err">Network Error: {response.status_code}</div>', unsafe_allow_html=True)
-            return
+        if response.status_code != 200: return
 
-        soup = BeautifulSoup(response.text, 'html.parser')
-        full_text = soup.get_text() # 获取所有纯文本，忽略HTML标签结构
-
-        # 1. 暴力正则匹配日期
-        # 格式：数字(1-2位) + 空格 + 泰语月份 + 空格 + 25xx(年份)
-        month_names = "|".join(get_thai_month_map().keys())
-        # Regex: Look for pattern like "16 มกราคม 2569"
-        pattern = re.compile(r'(\d{1,2})\s+(' + month_names + r')\s+(25\d{2})')
+        soup = BeautifulSoup(response.content, 'html.parser')
         
-        matches = pattern.findall(full_text)
+        # 1. 找到所有可能的“彩票区块”
+        # Sanook 将每一期彩票放在 class="lotto-check__item" 或类似的结构里
+        # 我们遍历页面上所有包含“รางวัลที่ 1” (一等奖) 的区块
         
-        if not matches:
-            # 备用正则：可能空格被压缩了
-            pattern_tight = re.compile(r'(\d{1,2})\s*(' + month_names + r')\s*(25\d{2})')
-            matches = pattern_tight.findall(full_text)
-
-        if not matches:
-            status_placeholder.markdown(f'<div class="status-bar status-warn">Date Parse Failed (No date pattern found in text)</div>', unsafe_allow_html=True)
-            return
-
-        # 我们取第一个匹配到的日期（通常是页面最显眼的位置，即最新日期）
-        day_raw, month_raw, year_raw = matches[0]
+        # 查找所有一等奖的容器 (div)
+        prize_blocks = soup.find_all("div", class_=lambda x: x and "number--1st" in x)
         
-        # 转换格式
+        if not prize_blocks: return
+
         month_map = get_thai_month_map()
-        mm = month_map.get(month_raw, "01")
-        dd = f"{int(day_raw):02d}"
-        yyyy = str(int(year_raw) - 543) # 泰历转公历
         
-        best_date = f"{mm}/{dd}/{yyyy}" # Format: MM/DD/YYYY
-
-        # 2. 检查本地 CSV，如果已存在则跳过
-        if os.path.exists(DATA_FILE):
-            df = pd.read_csv(DATA_FILE)
-            if best_date in df['date'].values:
-                # 数据已是最新，安静退出
-                return 
-        else:
-            df = pd.DataFrame(columns=["date", "prize_1st", "prize_2digits"])
-
-        # 3. 抓取号码 (使用最稳定的 Class)
-        # 无论日期在哪里，最新的奖号通常在特定的 CSS class 里
-        p1 = soup.find("div", class_=lambda x: x and "number--1st" in x)
-        p2d = soup.find("div", class_=lambda x: x and "number--last2" in x)
-        
-        if not p1 or not p2d:
-            status_placeholder.markdown(f'<div class="status-bar status-warn">Found Date {best_date} but no numbers found. Structure changed?</div>', unsafe_allow_html=True)
-            return
+        for p1_div in prize_blocks:
+            # 对于每一个找到的号码块，往上找它的父容器，直到找到包含日期的标题
+            # 或者简单点：在这个块附近找日期
             
-        prize_1 = p1.get_text().strip()
-        prize_2d = p2d.get_text().strip()
+            # 获取一等奖号码
+            prize_1 = p1_div.get_text().strip()
+            if not prize_1 or not prize_1.isdigit(): continue # 如果是空的或者是占位符，跳过
 
-        # 4. 写入数据
-        new_row = {
-            "date": best_date,
-            "prize_1st": prize_1,
-            "prize_2digits": prize_2d,
-            "prize_pre_3digit": "[]",
-            "prize_sub_3digits": "[]"
-        }
-        
-        status_placeholder.markdown(f'<div class="status-bar status-ok">✅ Updating: {best_date} | 1st: {prize_1} | 2d: {prize_2d}</div>', unsafe_allow_html=True)
-        
-        df_new = pd.DataFrame([new_row])
-        df_new.to_csv(DATA_FILE, mode='a', header=not os.path.exists(DATA_FILE), index=False)
-        
-        time.sleep(1.5)
-        st.rerun()
+            # 尝试找对应的末两位
+            # 在同一个父级容器里找
+            parent = p1_div.find_parent("div", class_="lotto-check__content") or p1_div.find_parent("article") or soup
+            p2d_div = parent.find("div", class_=lambda x: x and "number--last2" in x)
+            if not p2d_div: continue
+            prize_2d = p2d_div.get_text().strip()
+
+            # 尝试找对应的日期
+            # 通常在父容器的 h3 或 time 标签里
+            # 获取父容器内的所有文本
+            block_text = parent.get_text()
+            
+            # 解析日期
+            found_month = None
+            found_month_num = None
+            for m_th, m_num in month_map.items():
+                if m_th in block_text:
+                    found_month = m_th
+                    found_month_num = m_num
+                    break
+            
+            if not found_month: continue
+            
+            # 正则提取日期
+            day_match = re.search(r'(\d{1,2})\s*' + found_month, block_text)
+            year_match = re.search(r'(25\d{2})', block_text)
+            
+            if not day_match: continue
+            
+            day = f"{int(day_match.group(1)):02d}"
+            
+            if year_match:
+                th_year = int(year_match.group(1))
+                year = str(th_year - 543)
+            else:
+                year = str(datetime.datetime.now().year)
+
+            date_str = f"{found_month_num}/{day}/{year}"
+            
+            # 找到了一组完整的数据 (日期 + 1等奖 + 2位)
+            # 检查是否已存在
+            if date_str not in current_df['date'].values:
+                # 写入 CSV
+                new_row = {
+                    "date": date_str,
+                    "prize_1st": prize_1,
+                    "prize_2digits": prize_2d,
+                    "prize_pre_3digit": "[]",
+                    "prize_sub_3digits": "[]"
+                }
+                df_new = pd.DataFrame([new_row])
+                df_new.to_csv(DATA_FILE, mode='a', header=False, index=False)
+                st.toast(f"Updated: {date_str}", icon="✅")
+                time.sleep(1)
+                st.rerun()
+                return # 更新一次即可
+            else:
+                # 如果这个日期已经有了，且是页面上最新的（第一个），那说明不需要更新
+                # 继续检查下一个 block 吗？通常不需要，因为我们只要最新的
+                # 但为了保险，只在第一个匹配项退出
+                return
 
     except Exception as e:
-        status_placeholder.markdown(f'<div class="status-bar status-err">System Error: {str(e)}</div>', unsafe_allow_html=True)
+        print(f"Scrape Error: {e}")
 
-# 🚀 Run Scraper
-sync_data_with_sanook()
+def update_dataset_if_needed():
+    if not os.path.exists(DATA_FILE): return
+
+    try:
+        df = pd.read_csv(DATA_FILE)
+        
+        # 简单的触发逻辑：如果数据行数少，或者想每次都检查，直接运行
+        # 为了不影响性能，我们只在“看似需要更新”时运行
+        # 但既然之前判定总出错，我们这里做一个简单的 CD (Cool Down)
+        # 或者：每次加载页面都静默检查一次（不转圈圈，后台跑）
+        scrape_and_append(df)
+            
+    except Exception as e:
+        pass
+
+# Run Auto-Update Check
+update_dataset_if_needed()
 
 # ------------------------------------------------------------
-# 主界面逻辑
+# 主界面逻辑 (显示数据)
 # ------------------------------------------------------------
 st.markdown(clean_html(f"""
 <h1 style='text-align: center; color: #E63946; font-size: 1.8em; margin-bottom: 0px;'>
@@ -164,12 +203,11 @@ st.markdown(clean_html(f"""
 <hr style='margin-top: 5px; margin-bottom: 15px;'>
 """), unsafe_allow_html=True)
 
+# 读取数据
 @st.cache_data
 def load_data():
     if not os.path.exists(DATA_FILE): return pd.DataFrame()
     df = pd.read_csv(DATA_FILE)
-    
-    # 清洗：删除重复
     df = df.drop_duplicates(subset=['date'], keep='last')
     
     def parse_dt(d):
@@ -179,10 +217,10 @@ def load_data():
             except: return pd.NaT
     df['date_obj'] = df['date'].apply(parse_dt)
     
-    # 清洗：删除未来的诡异日期（比如误判为 3000年的）
-    # 但保留2026年的数据
-    today_limit = datetime.datetime.now() + datetime.timedelta(days=60)
-    df = df[df['date_obj'] < today_limit]
+    # 过滤未来的错误数据 (Dirty Data Fix)
+    today = datetime.datetime.now()
+    # 允许未来 5 天的误差，防止时区问题，但超过5天肯定错
+    df = df[df['date_obj'] <= (today + datetime.timedelta(days=5))]
     
     df = df.sort_values('date_obj', ascending=False).reset_index(drop=True)
     return df
@@ -190,7 +228,7 @@ def load_data():
 df = load_data()
 
 if df.empty:
-    st.warning("No data found locally. Waiting for scrape...")
+    st.error("No Data.")
     st.stop()
 
 # 显示最新一期
@@ -215,19 +253,24 @@ st.markdown(clean_html(f"""
 <style>
 .latest-draw-container {{ background-color: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }}
 .latest-date {{ font-size: 1.0em; color: #555; margin-bottom: 15px; font-weight: 500; }}
+.prize-1st-box {{ margin-bottom: 20px; }}
 .result-number-1st {{ font-size: 2.5em; font-weight: 800; color: #173858; letter-spacing: 3px; }}
+.result-title {{ font-size: 0.9em; color: #173858; margin-bottom: 2px; }}
+.sub-prizes-row {{ display: flex; justify-content: space-around; flex-wrap: wrap; border-top: 1px solid #eee; padding-top: 15px; }}
+.sub-prize-item {{ text-align: center; min-width: 30%; margin-bottom: 10px; }}
+.sub-number {{ font-size: 1.4em; font-weight: 700; color: #173858; letter-spacing: 1px; }}
 .sub-number-2d {{ font-size: 1.6em; font-weight: 800; color: #173858; }}
 </style>
 <div class="latest-draw-container">
 <div class="latest-date">{T['data_latest'].format(latest['date'])}</div>
-<div style="margin-bottom:20px;">
-    <div style="font-size:0.9em;color:#173858;">{T['title'].split(' ')[0]} 1st Prize</div>
-    <div class="result-number-1st">{latest_1st}</div>
+<div class="prize-1st-box">
+<div class="result-title">1st Prize</div>
+<div class="result-number-1st">{latest_1st}</div>
 </div>
-<div style="display:flex; justify-content:space-around; border-top:1px solid #eee; padding-top:10px;">
-    <div><div style="font-size:0.8em;">3 Prefix</div><div style="font-weight:700;color:#555;">{prefix_str}</div></div>
-    <div><div style="font-size:0.8em;">3 Suffix</div><div style="font-weight:700;color:#555;">{suffix_str}</div></div>
-    <div><div style="font-size:0.8em;">2 Digits</div><div class="sub-number-2d">{latest_2d}</div></div>
+<div class="sub-prizes-row">
+<div class="sub-prize-item"><div class="result-title">3 Prefix</div><div class="sub-number">{prefix_str}</div></div>
+<div class="sub-prize-item"><div class="result-title">3 Suffix</div><div class="sub-number">{suffix_str}</div></div>
+<div class="sub-prize-item"><div class="result-title">2 Digits</div><div class="sub-number sub-number-2d">{latest_2d}</div></div>
 </div>
 </div>
 """), unsafe_allow_html=True)
@@ -242,7 +285,6 @@ for idx, row in df.iterrows():
     val = str(row['prize_2digits']).strip()
     if len(val) == 1: val = "0" + val
     if val and val.lower() != 'nan': all_2digits.append(val)
-    # 3D parsing (simplified)
     for col in ['prize_pre_3digit', 'prize_sub_3digits']:
         if col in df.columns:
             try:
@@ -308,12 +350,29 @@ while len(h_picks_3)<3: h_picks_3.append("--"); h_reasons_3.append("")
 with tab3: show_picker_grid_card(h_picks_2, h_picks_3, h_reasons_2, h_reasons_3, "Most Frequent Numbers", "Hot")
 
 # -----------------------------------------------
+# Monte Carlo (Simple)
+# -----------------------------------------------
+st.divider()
+st.subheader("Monte Carlo Simulation")
+if st.button("Run Sim (5 Years)"):
+    years = 5
+    sims = int(24 * years)
+    cost = 0; win = 0
+    for _ in range(sims):
+        cost += 80
+        if random.random() < 0.01: win += 2000
+    st.metric("Net Profit", f"{win - cost} THB")
+    if win > cost: st.success("Profit!")
+    else: st.error("Loss")
+
+# -----------------------------------------------
 # Footer
 # -----------------------------------------------
 st.divider()
 st.markdown(clean_html(f"""
 <div style="text-align: center; margin-top: 20px;">
 <h3>☕ Support Creator</h3>
+<p style="color: #666;">If you find this useful.</p>
 </div>
 """), unsafe_allow_html=True)
 
