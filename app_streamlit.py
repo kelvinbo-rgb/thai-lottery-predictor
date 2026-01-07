@@ -425,7 +425,7 @@ with lc3:
 T = LANG[st.session_state.lang_choice]
 
 # ------------------------------------------------------------
-# 🤖 自动更新逻辑 (Auto-Scraper) - 修复版 (Flexible Date)
+# 🤖 自动更新逻辑 (Auto-Scraper) - 跨年修复版 (2026 Ready)
 # ------------------------------------------------------------
 SOURCE_URL = "https://news.sanook.com/lotto/"
 DATA_FILE = "historical_data.csv"
@@ -437,53 +437,11 @@ def get_thai_month_map():
         "กันยายน": "09", "ตุลาคม": "10", "พฤศจิกายน": "11", "ธันวาคม": "12"
     }
 
-def update_dataset_if_needed():
-    if not os.path.exists(DATA_FILE):
-        return
-
-    try:
-        df = pd.read_csv(DATA_FILE)
-        # Parse Dates Safely
-        def parse_dt(d):
-            try: return pd.to_datetime(d, format="%m/%d/%Y")
-            except: 
-                try: return pd.to_datetime(d, format="%Y-%m-%d")
-                except: return pd.NaT
-        df['dt_obj'] = df['date'].apply(parse_dt)
-        if df['dt_obj'].isna().all(): return
-
-        latest_date = df['dt_obj'].max()
-        today = datetime.datetime.now()
-        
-        # --- 优化后的逻辑 ---
-        # 不再强制今天是1号或16号，只要最近数据比较旧，就尝试更新
-        should_update = False
-        days_diff = (today - latest_date).days
-
-        # 1. 正常周期超过 16 天，肯定要更新
-        if days_diff >= 16:
-            should_update = True
-        
-        # 2. 如果是月初 (1-5号) 且最新数据不是本月的 -> 尝试更新
-        elif 1 <= today.day <= 5:
-            if latest_date.month != today.month:
-                should_update = True
-                
-        # 3. 如果是月中 (16-20号) 且最新数据是上半月的 -> 尝试更新
-        elif 16 <= today.day <= 20:
-             if latest_date.day < 16:
-                 should_update = True
-
-        if should_update:
-            with st.spinner(T["auto_update_msg"]):
-                scrape_and_append(df)
-            
-    except Exception as e:
-        print(f"Update Check Error: {e}")
-
 def scrape_and_append(current_df):
+    """
+    智能抓取：扫描首页和历史列表，寻找比 CSV 里更新的数据
+    """
     try:
-        # Add headers to avoid bot detection
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
@@ -492,85 +450,162 @@ def scrape_and_append(current_df):
 
         soup = BeautifulSoup(response.content, 'html.parser')
         
-        # --- Flexible Date Parsing (Regex) ---
-        title = soup.find("h1")
-        date_str = ""
+        # 获取 CSV 中最新的日期对象，用于比对
+        try:
+            current_max_date = pd.to_datetime(current_df['date']).max()
+        except:
+            current_max_date = pd.to_datetime("2000-01-01")
+
+        # --- 候选列表策略 ---
+        # Sanook 首页不仅有 H1 (最新/置顶)，还有 h3 class="lotto-check__title" (最近的历史记录)
+        # 我们必须扫描这些列表，因为 1月2日 的数据可能已经不是 H1 了
+        candidates = []
         
-        if title:
-            text = title.get_text()
-            month_map = get_thai_month_map()
+        # 1. 首页大标题
+        h1 = soup.find("h1")
+        if h1: candidates.append(h1)
+        
+        # 2. 列表标题 (抓取前3个，防止漏掉延期的数据)
+        archive_items = soup.find_all("h3", class_="lotto-check__title")
+        candidates.extend(archive_items[:3])
+        
+        month_map = get_thai_month_map()
+        
+        # 遍历所有候选标题，寻找“新”数据
+        for element in candidates:
+            text = element.get_text()
             
+            # 解析月份
             found_month = None
             found_month_num = None
-            
-            # Find month
             for m_th, m_num in month_map.items():
                 if m_th in text:
                     found_month = m_th
                     found_month_num = m_num
                     break
             
-            if found_month:
-                # Find day: look for 1 or 2 digits before the month
-                # This handles "2 พฤษภาคม", "16 พฤษภาคม", etc.
-                day_match = re.search(r'(\d{1,2})\s*' + found_month, text)
-                if day_match:
-                    day_num = int(day_match.group(1))
-                    day = f"{day_num:02d}"
-                else:
-                    # Fallback
-                    day = "01" if "1 " in text else ("16" if "16" in text else "01")
+            if not found_month: continue
 
-                # Find year: look for 4 digits starting with 25 (Thai year)
-                year_match = re.search(r'(25\d{2})', text)
-                if year_match:
-                    th_year = int(year_match.group(1))
-                    year = str(th_year - 543)
-                else:
-                    year = str(datetime.datetime.now().year)
-
-                date_str = f"{found_month_num}/{day}/{year}"
-
-        if not date_str: return
-        
-        # Check if exists (Standardize format checks)
-        existing_dates = set(current_df['date'].values)
-        # Check standard format MM/DD/YYYY
-        if date_str in existing_dates:
-            return
+            # 解析日期 (正则：数字 + 月份)
+            # 兼容 "2 มกราคม" 或 "16 มกราคม"
+            day_match = re.search(r'(\d{1,2})\s*' + found_month, text)
+            if not day_match: continue
+            day = f"{int(day_match.group(1)):02d}"
             
-        # 2. Parse Numbers
-        prize_1 = None
-        prize_2d = None
-        
-        # Sanook parsing
-        p1_div = soup.find("div", class_=lambda x: x and "number--1st" in x)
-        if p1_div: prize_1 = p1_div.get_text().strip()
-        
-        p2d_div = soup.find("div", class_=lambda x: x and "number--last2" in x)
-        if p2d_div: prize_2d = p2d_div.get_text().strip()
-        
-        if not prize_1 or not prize_2d:
-            return
+            # 解析年份 (泰历转公历)
+            # 2569 -> 2026, 2568 -> 2025
+            year_match = re.search(r'(25\d{2})', text)
+            if year_match:
+                th_year = int(year_match.group(1))
+                year = str(th_year - 543)
+            else:
+                # 如果没写年份，默认取当前系统年份
+                year = str(datetime.datetime.now().year)
 
-        # Construct new row
-        new_row = {
-            "date": date_str,
-            "prize_1st": prize_1,
-            "prize_2digits": prize_2d,
-            "prize_pre_3digit": "[]", 
-            "prize_sub_3digits": "[]"
-        }
-        
-        # Append to CSV
-        df_new = pd.DataFrame([new_row])
-        df_new.to_csv(DATA_FILE, mode='a', header=False, index=False)
-        st.toast(f"Updated data for {date_str}!", icon="✅")
-        time.sleep(1) # Allow IO to finish
-        st.rerun()
-        
+            candidate_date_str = f"{found_month_num}/{day}/{year}"
+            
+            # 转换为日期对象进行比较
+            try:
+                candidate_dt = pd.to_datetime(candidate_date_str, format="%m/%d/%Y")
+            except:
+                continue
+
+            # --- 核心判断：只有当 抓到的日期 > CSV里最新日期 时才处理 ---
+            if candidate_dt > current_max_date:
+                # 找到了新数据！
+                # 尝试抓取号码
+                prize_1 = None
+                prize_2d = None
+                
+                # 方案 A: 元素本身周围有数据吗？(如果是详情页或首页H1)
+                # 尝试在 element 的父级容器里找
+                parent = element.find_parent("div", class_="lotto-check__item") # 列表项容器
+                if not parent: parent = soup # 如果是H1，就在全页找
+                
+                p1_div = parent.find("div", class_=lambda x: x and "number--1st" in x)
+                if p1_div: prize_1 = p1_div.get_text().strip()
+                
+                p2d_div = parent.find("div", class_=lambda x: x and "number--last2" in x)
+                if p2d_div: prize_2d = p2d_div.get_text().strip()
+                
+                # 方案 B: 如果列表页只有标题没有号码，必须进入链接
+                if not prize_1 or not prize_2d:
+                    link_tag = element.find_parent("a")
+                    if link_tag:
+                        sub_url = link_tag.get('href')
+                        try:
+                            sub_resp = requests.get(sub_url, headers=headers, timeout=5)
+                            sub_soup = BeautifulSoup(sub_resp.content, 'html.parser')
+                            
+                            p1_div = sub_soup.find("div", class_=lambda x: x and "number--1st" in x)
+                            if p1_div: prize_1 = p1_div.get_text().strip()
+                            p2d_div = sub_soup.find("div", class_=lambda x: x and "number--last2" in x)
+                            if p2d_div: prize_2d = p2d_div.get_text().strip()
+                        except:
+                            pass
+
+                if prize_1 and prize_2d:
+                    # 写入数据
+                    new_row = {
+                        "date": candidate_date_str,
+                        "prize_1st": prize_1,
+                        "prize_2digits": prize_2d,
+                        "prize_pre_3digit": "[]",
+                        "prize_sub_3digits": "[]"
+                    }
+                    df_new = pd.DataFrame([new_row])
+                    df_new.to_csv(DATA_FILE, mode='a', header=False, index=False)
+                    
+                    st.toast(f"🎉 Auto-Updated: {candidate_date_str}", icon="✅")
+                    time.sleep(1)
+                    st.rerun()
+                    return # 更新一次就退出，避免重复刷新
+
     except Exception as e:
         print(f"Scrape Error: {e}")
+
+def update_dataset_if_needed():
+    if not os.path.exists(DATA_FILE):
+        return
+
+    try:
+        df = pd.read_csv(DATA_FILE)
+        
+        # 1. 解析日期
+        def parse_dt(d):
+            try: return pd.to_datetime(d, format="%m/%d/%Y")
+            except: 
+                try: return pd.to_datetime(d, format="%Y-%m-%d")
+                except: return pd.NaT
+        
+        df['dt_obj'] = df['date'].apply(parse_dt)
+        if df['dt_obj'].isna().all(): return
+
+        latest_date = df['dt_obj'].max() # 2025-12-16
+        today = datetime.datetime.now()  # 2026-01-07
+        
+        should_update = False
+        days_diff = (today - latest_date).days
+
+        # --- 判定逻辑 (跨年友好版) ---
+        
+        # 1. 简单粗暴：如果超过 15 天没更新，就查。
+        # 2025-12-16 到 2026-01-07 间隔 22 天 -> True
+        if days_diff >= 15:
+            should_update = True
+            
+        # 2. 补漏：如果是月初 (1-7号)，且最新数据还是上个月的 (或者去年的)
+        # 例如 today=1月7日, latest=12月16日 -> Month 1 != Month 12 -> True
+        elif 1 <= today.day <= 7:
+            if latest_date.month != today.month:
+                should_update = True
+
+        if should_update:
+            # 静默检查，不阻塞 UI 太久
+            scrape_and_append(df)
+            
+    except Exception as e:
+        print(f"Update Check Error: {e}")
 
 # Run Auto-Update Check
 update_dataset_if_needed()
