@@ -204,7 +204,7 @@ st.markdown(clean_html(f"""
 """), unsafe_allow_html=True)
 
 # 读取数据
-@st.cache_data
+@st.cache_data(ttl=300)  # Cache for 5 minutes, then refresh
 def load_data():
     if not os.path.exists(DATA_FILE): return pd.DataFrame()
     df = pd.read_csv(DATA_FILE)
