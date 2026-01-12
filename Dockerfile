@@ -12,8 +12,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy app files
 COPY . .
 
-# Expose port (Koyeb usually defaults to 8000)
-EXPOSE 8000
+# Expose port (GCP defaults to 8080)
+EXPOSE 8080
 
-# Run Streamlit on port 8000
-CMD ["streamlit", "run", "app_streamlit.py", "--server.port=8000", "--server.address=0.0.0.0"]
+# Run Streamlit on port 8080
+CMD ["streamlit", "run", "app_streamlit.py", "--server.port=8080", "--server.address=0.0.0.0"]
