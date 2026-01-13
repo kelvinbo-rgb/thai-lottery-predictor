@@ -248,6 +248,10 @@ def get_thai_month_map():
         "กันยายน": "09", "ตุลาคม": "10", "พฤศจิกายน": "11", "ธันวาคม": "12"
     }
 
+def format_display_date(dt_obj):
+    if pd.isna(dt_obj): return "-"
+    return dt_obj.strftime("%d %b %Y")
+
 def scrape_and_append(current_df):
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
@@ -426,12 +430,7 @@ st.markdown(clean_html(f"""
 .sub-number {{ font-size: 1.4em; font-weight: 700; color: #173858; letter-spacing: 1px; }}
 .sub-number-2d {{ font-size: 1.6em; font-weight: 800; color: #173858; }}
 </style>
-# Helper: Date Formatting
-def format_display_date(dt_obj):
-    if pd.isna(dt_obj): return "-"
-    return dt_obj.strftime("%d %b %Y")
 
-st.markdown(clean_html(f"""
 <div class="latest-draw-container">
 <div class="latest-date">{T['data_latest'].format(format_display_date(latest['date_obj']))}</div>
 <div class="prize-1st-box">
