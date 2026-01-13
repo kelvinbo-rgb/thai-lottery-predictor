@@ -291,7 +291,10 @@ for idx, row in df.iterrows():
                 items = ast.literal_eval(str(row[col]))
                 if isinstance(items, list):
                     for item in items:
-                        if isinstance(item, str) and item.isdigit() and len(item) == 3: all_3digits.append(item)
+                        # Handle both integers and strings, pad to 3 digits
+                        item_str = str(item).strip()
+                        if item_str.isdigit() and 1 <= len(item_str) <= 3:
+                            all_3digits.append(item_str.zfill(3))
             except: pass
 
 counter_2 = collections.Counter(all_2digits)
@@ -326,12 +329,17 @@ def show_picker_grid_card(picks_2, picks_3, reasons_2, reasons_3, desc, mode_lab
 pop2 = list(counter_2.keys())
 w2 = list(counter_2.values())
 t_picks_2 = random.choices(pop2, weights=w2, k=3) if pop2 else ["--"]*3
-t_reasons_2 = [f"{counter_2[p]} hits" for p in t_picks_2]
+t_reasons_2 = [f"{counter_2[p]} hits" for p in t_picks_2 if p != "--"]
 pop3 = list(counter_3.keys())
 w3 = list(counter_3.values())
 if not pop3: pop3=['000']; w3=[1]
 t_picks_3 = random.choices(pop3, weights=w3, k=3)
-t_reasons_3 = [f"{counter_3.get(p,0)} hits" for p in t_picks_3]
+t_reasons_3 = [f"{counter_3.get(p,0)} hits" for p in t_picks_3 if p != "--"]
+# Ensure 3 picks with padding
+while len(t_picks_2) < 3: t_picks_2.append("--"); t_reasons_2.append("")
+while len(t_picks_3) < 3: t_picks_3.append("--"); t_reasons_3.append("")
+while len(t_reasons_2) < 3: t_reasons_2.append("")
+while len(t_reasons_3) < 3: t_reasons_3.append("")
 
 with tab1: show_picker_grid_card(t_picks_2, t_picks_3, t_reasons_2, t_reasons_3, "Based on historical momentum", "Trend")
 
@@ -350,20 +358,208 @@ while len(h_picks_3)<3: h_picks_3.append("--"); h_reasons_3.append("")
 with tab3: show_picker_grid_card(h_picks_2, h_picks_3, h_reasons_2, h_reasons_3, "Most Frequent Numbers", "Hot")
 
 # -----------------------------------------------
-# Monte Carlo (Simple)
+# Module 3: Mathematical Truth (数学真相概率表)
 # -----------------------------------------------
 st.divider()
-st.subheader("Monte Carlo Simulation")
-if st.button("Run Sim (5 Years)"):
-    years = 5
-    sims = int(24 * years)
-    cost = 0; win = 0
+st.subheader("📊 Mathematical Truth")
+st.markdown("*Prize probabilities and expected values based on official lottery structure*")
+
+# Thai Lottery Prize Structure
+prize_data = [
+    {"Prize": "1st Prize", "Probability": "1/1,000,000", "Payout": "6,000,000 THB", "EV/Ticket": "6.00 THB"},
+    {"Prize": "Nearby 1st", "Probability": "2/1,000,000", "Payout": "100,000 THB", "EV/Ticket": "0.20 THB"},
+    {"Prize": "2nd Prize", "Probability": "5/1,000,000", "Payout": "200,000 THB", "EV/Ticket": "1.00 THB"},
+    {"Prize": "3rd Prize", "Probability": "10/1,000,000", "Payout": "80,000 THB", "EV/Ticket": "0.80 THB"},
+    {"Prize": "4th Prize", "Probability": "50/1,000,000", "Payout": "40,000 THB", "EV/Ticket": "2.00 THB"},
+    {"Prize": "5th Prize", "Probability": "100/1,000,000", "Payout": "20,000 THB", "EV/Ticket": "2.00 THB"},
+    {"Prize": "3-Digit (Front/Back)", "Probability": "4,000/1,000,000", "Payout": "4,000 THB", "EV/Ticket": "16.00 THB"},
+    {"Prize": "2-Digit (Last)", "Probability": "10,000/1,000,000", "Payout": "2,000 THB", "EV/Ticket": "20.00 THB"},
+]
+import pandas as pd
+prize_df = pd.DataFrame(prize_data)
+st.dataframe(prize_df, use_container_width=True, hide_index=True)
+
+# Summary
+total_ev = 6 + 0.2 + 1 + 0.8 + 2 + 2 + 16 + 20  # ~48 THB
+ticket_cost = 80
+st.markdown(f"""
+**Summary:**
+- 💰 Ticket Cost: **{ticket_cost} THB**
+- 📈 Expected Return per Ticket: **~{total_ev:.0f} THB**
+- 📉 Expected Loss per Ticket: **~{ticket_cost - total_ev:.0f} THB** (ROI: {((total_ev/ticket_cost)-1)*100:.1f}%)
+""")
+
+# -----------------------------------------------
+# Module 4: Historical Backtest (历史模拟回测)
+# -----------------------------------------------
+st.divider()
+st.subheader("⏪ Historical Backtest")
+st.markdown("*Simulate playing with historical data*")
+
+backtest_years = st.slider("Backtest Period (Years)", min_value=1, max_value=10, value=3)
+
+if st.button("Run Backtest"):
+    # Get data for backtest
+    draws_per_year = 24
+    total_periods = min(backtest_years * draws_per_year, len(df))
+    
+    if total_periods < 12:
+        st.warning("Not enough historical data for this backtest period.")
+    else:
+        trend_hits = 0
+        random_hits = 0
+        cost_per_draw = 240  # 3 tickets @ 80 THB
+        
+        # Chronological order for rolling backtest
+        df_chrono = df.sort_values('date_obj', ascending=True).reset_index(drop=True)
+        start_idx = max(0, len(df_chrono) - total_periods)
+        
+        for i in range(start_idx + 10, len(df_chrono)):  # Need at least 10 prior periods
+            target = str(df_chrono.iloc[i]['prize_2digits']).strip().zfill(2)
+            
+            # Build history up to this point
+            history = []
+            for j in range(start_idx, i):
+                val = str(df_chrono.iloc[j]['prize_2digits']).strip()
+                if val and val.lower() != 'nan':
+                    history.append(val.zfill(2))
+            
+            if not history:
+                continue
+                
+            # Trend strategy: weighted random from history
+            hist_counter = collections.Counter(history)
+            pop = list(hist_counter.keys())
+            wgt = list(hist_counter.values())
+            trend_picks = random.choices(pop, weights=wgt, k=3) if pop else []
+            
+            # Random strategy
+            random_picks = [f"{random.randint(0,99):02d}" for _ in range(3)]
+            
+            if target in trend_picks:
+                trend_hits += 1
+            if target in random_picks:
+                random_hits += 1
+        
+        periods_tested = len(df_chrono) - start_idx - 10
+        total_cost = periods_tested * cost_per_draw
+        
+        bt_col1, bt_col2 = st.columns(2)
+        with bt_col1:
+            st.metric("🔥 Trend Strategy", f"{trend_hits} wins", f"ROI: {((trend_hits * 2000 - total_cost) / total_cost * 100):.1f}%")
+        with bt_col2:
+            st.metric("🎲 Random Strategy", f"{random_hits} wins", f"ROI: {((random_hits * 2000 - total_cost) / total_cost * 100):.1f}%")
+        
+        # Conclusion
+        diff = trend_hits - random_hits
+        if abs(diff) <= 2:
+            st.info("📊 **Conclusion**: Both strategies perform similarly. This confirms the lottery's random nature.")
+        elif diff > 0:
+            st.success(f"📊 **Conclusion**: Trend strategy slightly ahead (+{diff}), but could be luck.")
+        else:
+            st.warning(f"📊 **Conclusion**: Random strategy won (+{-diff})! Chasing hot numbers doesn't always work.")
+
+# -----------------------------------------------
+# Module 5: Monte Carlo Simulation (蒙特卡洛模拟)
+# -----------------------------------------------
+st.divider()
+st.subheader("🎰 Monte Carlo Simulation")
+st.markdown("*Large-scale random sampling simulation*")
+
+mc_years = st.slider("Simulation Period (Years)", min_value=1, max_value=10, value=5, key="mc_years")
+mc_tickets = st.slider("Tickets per Draw", min_value=1, max_value=10, value=1, key="mc_tickets")
+
+if st.button("Run Monte Carlo"):
+    sims = int(24 * mc_years)  # 24 draws per year
+    total_cost = 0
+    total_win = 0
+    jackpot_hit = False
+    wins_breakdown = {"2-digit": 0, "3-digit": 0, "other": 0, "jackpot": 0}
+    
     for _ in range(sims):
-        cost += 80
-        if random.random() < 0.01: win += 2000
-    st.metric("Net Profit", f"{win - cost} THB")
-    if win > cost: st.success("Profit!")
-    else: st.error("Loss")
+        for _ in range(mc_tickets):
+            total_cost += 80
+            
+            # 2-digit (1% chance)
+            if random.random() < 0.01:
+                total_win += 2000
+                wins_breakdown["2-digit"] += 1
+            
+            # 3-digit (0.4% chance)
+            if random.random() < 0.004:
+                total_win += 4000
+                wins_breakdown["3-digit"] += 1
+            
+            # Jackpot (1/1,000,000)
+            if random.random() < 0.000001:
+                total_win += 6000000
+                wins_breakdown["jackpot"] += 1
+                jackpot_hit = True
+            
+            # Other prizes (~0.017% combined)
+            if random.random() < 0.00017:
+                total_win += 30000
+                wins_breakdown["other"] += 1
+    
+    net = total_win - total_cost
+    
+    mc_col1, mc_col2, mc_col3 = st.columns(3)
+    with mc_col1:
+        st.metric("Total Cost", f"{total_cost:,} THB")
+    with mc_col2:
+        st.metric("Total Winnings", f"{total_win:,} THB")
+    with mc_col3:
+        st.metric("Net Profit", f"{net:,} THB", delta=f"{(net/total_cost*100):.1f}%" if total_cost > 0 else "0%")
+    
+    st.markdown(f"**Wins**: 2-digit: {wins_breakdown['2-digit']} | 3-digit: {wins_breakdown['3-digit']} | Other: {wins_breakdown['other']} | Jackpot: {wins_breakdown['jackpot']}")
+    
+    if jackpot_hit:
+        st.balloons()
+        st.success("🤯 JACKPOT HIT! (This is extremely rare - don't expect this in real life!)")
+    elif net > 0:
+        st.success("💰 Profit! But remember, this is just simulation luck.")
+    else:
+        st.error("📉 Loss. Long-term, the house always wins.")
+
+# -----------------------------------------------
+# Module 6: Scientific Validation (科学有效性检验)
+# -----------------------------------------------
+st.divider()
+st.subheader("🧪 Scientific Validation")
+st.markdown("*Chi-Square test to verify lottery randomness*")
+
+# Chi-Square Test on 2-digit numbers
+all_2d_for_chi = [str(row['prize_2digits']).strip().zfill(2) for idx, row in df.iterrows() if str(row['prize_2digits']).strip().lower() != 'nan']
+total_draws_chi = len(all_2d_for_chi)
+
+if total_draws_chi > 0:
+    expected_freq = total_draws_chi / 100.0
+    from collections import Counter as ChiCounter
+    chi_counter = ChiCounter(all_2d_for_chi)
+    
+    chi_square_stat = 0.0
+    for i in range(100):
+        num_str = f"{i:02d}"
+        observed = chi_counter.get(num_str, 0)
+        chi_square_stat += ((observed - expected_freq) ** 2) / expected_freq
+    
+    critical_value = 124.34  # df=99, p=0.05
+    
+    chi_col1, chi_col2 = st.columns(2)
+    with chi_col1:
+        st.metric("Sample Size", f"{total_draws_chi} draws")
+        st.metric("Chi-Square (χ²)", f"{chi_square_stat:.2f}")
+    with chi_col2:
+        st.metric("Critical Value (p=0.05)", f"{critical_value}")
+        if chi_square_stat < critical_value:
+            st.success("✅ Fair: Random distribution (H₀ accepted)")
+        else:
+            st.warning("⚠️ Bias Detected")
+    
+    if chi_square_stat < critical_value:
+        st.info("📊 **Conclusion**: The lottery is truly random. Historical patterns are just noise.")
+    else:
+        st.warning("📊 **Conclusion**: Statistical deviation detected. Could be sampling artifact or genuine bias.")
 
 # -----------------------------------------------
 # Footer
