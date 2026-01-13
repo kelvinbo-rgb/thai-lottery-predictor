@@ -55,9 +55,174 @@ footer {visibility: hidden;}
 # 🌍 Config
 # ------------------------------------------------------------
 LANG = {
-    "ภาษาไทย": { "title": "💰 วิเคราะห์หวยไทย (AI)", "data_latest": "งวดประจำวันที่ {}", "auto_update_msg": "กำลังตรวจสอบข้อมูล...", "err_scrape": "ไม่สามารถดึงข้อมูลได้: {}" },
-    "中文": { "title": "💰 泰国彩票AI智能策略", "data_latest": "最新开奖日期: {}", "auto_update_msg": "正在同步最新数据...", "err_scrape": "抓取失败: {}" },
-    "English": { "title": "💰 Thai Lottery AI Strategy", "data_latest": "Draw Date: {}", "auto_update_msg": "Checking for updates...", "err_scrape": "Scrape failed: {}" }
+    "ภาษาไทย": {
+        "title": "💰 วิเคราะห์หวยไทย (AI)",
+        "data_latest": "งวดประจำวันที่ {}",
+        "auto_update_msg": "กำลังตรวจสอบข้อมูล...",
+        "err_scrape": "ไม่สามารถดึงข้อมูลได้: {}",
+        "trend_tab": "🔥 แนวโน้ม",
+        "random_tab": "🧪 สุ่ม",
+        "hot_tab": "📊 ท็อปฮิต",
+        "momentum_desc": "อ้างอิงจากสถิติที่ผ่านมา",
+        "entropy_desc": "การสุ่มตัวเลขทางคณิตศาสตร์",
+        "freq_desc": "ตัวเลขที่ออกบ่อยที่สุด",
+        "two_digits": "2 ตัว",
+        "three_digits": "3 ตัว",
+        "math_truth": "📊 ความจริงเชิงสถิติ",
+        "math_desc": "โอกาสถูกรางวัลและมูลค่าทางคณิตศาสตร์",
+        "prize": "รางวัล",
+        "probability": "โอกาสถูก",
+        "payout": "เงินรางวัล",
+        "ev": "มูลค่าต่อใบ",
+        "summary": "สรุป:",
+        "ticket_cost": "ต้นทุนต่อใบ",
+        "expected_return": "มูลค่าเฉลี่ย",
+        "expected_loss": "ส่วนต่างขาดทุนเฉลี่ย",
+        "backtest_title": "⏪ ย้อนรอยประวัติศาสตร์",
+        "backtest_desc": "จำลองการซื้อหวยในอดีตด้วยกลยุทธ์ต่างๆ",
+        "backtest_period": "ระยะเวลาย้อนหลัง (ปี)",
+        "run_backtest": "เริ่มจำลองประวัติศาสตร์",
+        "trend_strat": "🔥 กลยุทธ์ตามแนวโน้ม",
+        "rand_strat": "🎲 กลยุทธ์สุ่ม",
+        "backtest_conclusion": "📊 สรุปผลการย้อนรอย:",
+        "monte_carlo": "🎰 จำลองเหตุการณ์ (Monte Carlo)",
+        "simulation_period": "ระยะเวลาจำลอง (ปี)",
+        "tickets_per_draw": "จำนวนใบต่อหนึ่งงวด",
+        "run_sim": "เริ่มจำลองเหตุการณ์",
+        "total_cost": "ทุนรวม",
+        "total_win": "รางวัลรวม",
+        "net_profit": "กำไร/ขาดทุน",
+        "win_breakdown": "รายละเอียดรางวัล: 2 ตัว: {} | 3 ตัว: {} | อื่นๆ: {} | รางวัลที่ 1: {}",
+        "jackpot_msg": "🤯 แจ็กพอตแตก! (เหตุการณ์ที่หายากมาก)",
+        "validation_title": "🧪 ทดสอบความเป็นธรรม",
+        "validation_desc": "ทดสอบด้วย Chi-Square เพื่อดูความสุ่มของข้อมูล",
+        "sample_size": "ขนาดตัวอย่าง",
+        "chi_square": "ค่าสถิติ Chi-Square",
+        "critical_value": "ค่าวิกฤต (p=0.05)",
+        "fair_stat": "✅ เป็นศูนย์กลาง (สุ่มเสมอกัน)",
+        "bias_stat": "⚠️ มีความเอนเอียงทางสถิติ",
+        "conclusion_title": "📊 ข้อสรุป:",
+        "support_creator": "☕ สนับสนุนผู้พัฒนา",
+        "support_desc": "หากคุณชื่นชอบการวิเคราะห์นี้",
+        "p1": "รางวัลที่ 1",
+        "p3_pre": "3 ตัวหน้า",
+        "p3_sub": "3 ตัวท้าย",
+        "p2d": "เลขท้าย 2 ตัว",
+        "conclusion_random": "📊 ดูเหมือนว่าหวยใบนี้จะสุ่มอย่างแท้จริง รูปแบบในอดีตเป็นเพียงสัญญาณรบกวนทางสถิติ แนะนำให้ใช้กลยุทธ์สุ่มตราบเท่าที่คุณยังต้องการเล่น",
+        "conclusion_bias": "📊 พบความเอนเอียงทางสถิติ อาจเกิดจากความบังเอิญของกลุ่มตัวอย่างหรือความไม่สมดุลบางอย่าง โปรดระมัดระวัง"
+    },
+    "中文": {
+        "title": "💰 泰国彩票AI智能策略",
+        "data_latest": "最新开奖日期: {}",
+        "auto_update_msg": "正在同步最新数据...",
+        "err_scrape": "抓取失败: {}",
+        "trend_tab": "🔥 趋势",
+        "random_tab": "🧪 随机",
+        "hot_tab": "📊 热门",
+        "momentum_desc": "基于历史动量分析",
+        "entropy_desc": "纯数学随机熵",
+        "freq_desc": "最频繁出现的数字",
+        "two_digits": "2 位数",
+        "three_digits": "3 位数",
+        "math_truth": "📊 数学真相概率表",
+        "math_desc": "官方中奖赔率及数学期望值",
+        "prize": "奖项",
+        "probability": "中奖几率",
+        "payout": "中奖金额",
+        "ev": "每张价值",
+        "summary": "总结:",
+        "ticket_cost": "彩票成本",
+        "expected_return": "预期回报",
+        "expected_loss": "单张平均亏损",
+        "backtest_title": "⏪ 历史模拟回测",
+        "backtest_desc": "模拟在不同历史区间运行策略的效果",
+        "backtest_period": "回测区间 (年)",
+        "run_backtest": "开始回测",
+        "trend_strat": "🔥 趋势策略",
+        "rand_strat": "🎲 随机策略",
+        "backtest_conclusion": "📊 回测结论:",
+        "monte_carlo": "🎰 蒙特卡洛模拟",
+        "simulation_period": "模拟区间 (年)",
+        "tickets_per_draw": "每期购买张数",
+        "run_sim": "开始模拟",
+        "total_cost": "总投入",
+        "total_win": "总奖金",
+        "net_profit": "净盈亏",
+        "win_breakdown": "中奖分布: 末2位: {} | 前/后3位: {} | 其他奖: {} | 一等奖: {}",
+        "jackpot_msg": "🤯 天呐！竟然中了一等奖！",
+        "validation_title": "🧪 科学有效性检验",
+        "validation_desc": "使用卡方检验 (Chi-Square) 验证随机性",
+        "sample_size": "样本总量",
+        "chi_square": "卡方统计量 (χ²)",
+        "critical_value": "临界值 (p=0.05)",
+        "fair_stat": "✅ 分布均匀 (符合随机规律)",
+        "bias_stat": "⚠️ 发现显著统计偏差",
+        "conclusion_title": "📊 结论:",
+        "support_creator": "☕ 支持开发者",
+        "support_desc": "如果你喜欢这个工具",
+        "p1": "一等奖",
+        "p3_pre": "前3位",
+        "p3_sub": "后3位",
+        "p2d": "末2位",
+        "conclusion_random": "📊 泰国彩票表现出极高的随机性。历史“热号”只是统计噪音，并不代表未来趋势。建议将其视为一种消费而非投资。",
+        "conclusion_bias": "📊 统计数据发现显著偏差。这可能是由于样本量不足或某种非随机因素导致的。请谨慎参考热门号码策略。"
+    },
+    "English": {
+        "title": "💰 Thai Lottery AI Strategy",
+        "data_latest": "Draw Date: {}",
+        "auto_update_msg": "Checking for updates...",
+        "err_scrape": "Scrape failed: {}",
+        "trend_tab": "🔥 Trend",
+        "random_tab": "🧪 Random",
+        "hot_tab": "📊 Hot",
+        "momentum_desc": "Based on historical momentum",
+        "entropy_desc": "Pure Entropy (Mathematical)",
+        "freq_desc": "Most Frequent Numbers",
+        "two_digits": "2 Digits",
+        "three_digits": "3 Digits",
+        "math_truth": "📊 Mathematical Truth",
+        "math_desc": "Official probabilities and expected values",
+        "prize": "Prize",
+        "probability": "Probability",
+        "payout": "Payout",
+        "ev": "EV/Ticket",
+        "summary": "Summary:",
+        "ticket_cost": "Ticket Cost",
+        "expected_return": "Expected Return",
+        "expected_loss": "Expected Loss",
+        "backtest_title": "⏪ Historical Backtest",
+        "backtest_desc": "Simulate playing with historical data",
+        "backtest_period": "Backtest Period (Years)",
+        "run_backtest": "Run Backtest",
+        "trend_strat": "🔥 Trend Strategy",
+        "rand_strat": "🎲 Random Strategy",
+        "backtest_conclusion": "📊 Backtest Conclusion:",
+        "monte_carlo": "🎰 Monte Carlo Simulation",
+        "simulation_period": "Simulation Period (Years)",
+        "tickets_per_draw": "Tickets per Draw",
+        "run_sim": "Run Simulation",
+        "total_cost": "Total Cost",
+        "total_win": "Total Winnings",
+        "net_profit": "Net Profit",
+        "win_breakdown": "Wins: 2-digit: {} | 3-digit: {} | Other: {} | Jackpot: {}",
+        "jackpot_msg": "🤯 JACKPOT HIT! (Rare event)",
+        "validation_title": "🧪 Scientific Validation",
+        "validation_desc": "Chi-Square test for randomness",
+        "sample_size": "Sample Size",
+        "chi_square": "Chi-Square (χ²)",
+        "critical_value": "Critical Value (p=0.05)",
+        "fair_stat": "✅ Fair: Random distribution",
+        "bias_stat": "⚠️ Bias Detected",
+        "conclusion_title": "📊 Conclusion:",
+        "support_creator": "☕ Support Creator",
+        "support_desc": "If you find this useful",
+        "p1": "1st Prize",
+        "p3_pre": "3 Prefix",
+        "p3_sub": "3 Suffix",
+        "p2d": "2 Digits",
+        "conclusion_random": "📊 The lottery appears to be truly random. Historical 'hot numbers' are just statistical noise and do not predict future outcomes. Use the Random Strategy.",
+        "conclusion_bias": "📊 Statistical deviation detected. This could be a sampling artifact or genuine bias. Exercise caution when following hot/cold number strategies."
+    }
 }
 
 if "lang_choice" not in st.session_state: st.session_state.lang_choice = "中文"
@@ -261,16 +426,22 @@ st.markdown(clean_html(f"""
 .sub-number {{ font-size: 1.4em; font-weight: 700; color: #173858; letter-spacing: 1px; }}
 .sub-number-2d {{ font-size: 1.6em; font-weight: 800; color: #173858; }}
 </style>
+# Helper: Date Formatting
+def format_display_date(dt_obj):
+    if pd.isna(dt_obj): return "-"
+    return dt_obj.strftime("%d %b %Y")
+
+st.markdown(clean_html(f"""
 <div class="latest-draw-container">
-<div class="latest-date">{T['data_latest'].format(latest['date'])}</div>
+<div class="latest-date">{T['data_latest'].format(format_display_date(latest['date_obj']))}</div>
 <div class="prize-1st-box">
-<div class="result-title">1st Prize</div>
+<div class="result-title">{T["p1"]}</div>
 <div class="result-number-1st">{latest_1st}</div>
 </div>
 <div class="sub-prizes-row">
-<div class="sub-prize-item"><div class="result-title">3 Prefix</div><div class="sub-number">{prefix_str}</div></div>
-<div class="sub-prize-item"><div class="result-title">3 Suffix</div><div class="sub-number">{suffix_str}</div></div>
-<div class="sub-prize-item"><div class="result-title">2 Digits</div><div class="sub-number sub-number-2d">{latest_2d}</div></div>
+<div class="sub-prize-item"><div class="result-title">{T["p3_pre"]}</div><div class="sub-number">{prefix_str}</div></div>
+<div class="sub-prize-item"><div class="result-title">{T["p3_sub"]}</div><div class="sub-number">{suffix_str}</div></div>
+<div class="sub-prize-item"><div class="result-title">{T["p2d"]}</div><div class="sub-number sub-number-2d">{latest_2d}</div></div>
 </div>
 </div>
 """), unsafe_allow_html=True)
@@ -302,12 +473,12 @@ counter_3 = collections.Counter(all_3digits)
 
 # Tab Layout
 st.divider()
-tab1, tab2, tab3 = st.tabs(["🔥 Trend", "🧪 Random", "📊 Hot"])
+tab1, tab2, tab3 = st.tabs([T["trend_tab"], T["random_tab"], T["hot_tab"]])
 
 def show_picker_grid_card(picks_2, picks_3, reasons_2, reasons_3, desc, mode_label):
     st.markdown(f"<div style='margin-bottom:15px; font-size:0.95em; color:#444;'>{desc}</div>", unsafe_allow_html=True)
     
-    left_html = f"""<div style="flex:1; margin-right:5px;"><div class='grid-header'>2 Digits</div>"""
+    left_html = f"""<div style="flex:1; margin-right:5px;"><div class='grid-header'>{T["two_digits"]}</div>"""
     for i in range(3):
         p = picks_2[i] if i < len(picks_2) else "--"
         r = reasons_2[i] if i < len(reasons_2) else ""
@@ -315,7 +486,7 @@ def show_picker_grid_card(picks_2, picks_3, reasons_2, reasons_3, desc, mode_lab
         left_html += f"""<div class="custom-metric-card" style="width:100%; margin-bottom:10px;"><div class="metric-label">{mode_label} #{i+1}</div><div class="metric-value">{p}</div>{delta_html}</div>"""
     left_html += "</div>"
     
-    right_html = f"""<div style="flex:1; margin-left:5px;"><div class='grid-header'>3 Digits</div>"""
+    right_html = f"""<div style="flex:1; margin-left:5px;"><div class='grid-header'>{T["three_digits"]}</div>"""
     for i in range(3):
         p = picks_3[i] if i < len(picks_3) else "--"
         r = reasons_3[i] if i < len(reasons_3) else ""
@@ -341,12 +512,12 @@ while len(t_picks_3) < 3: t_picks_3.append("--"); t_reasons_3.append("")
 while len(t_reasons_2) < 3: t_reasons_2.append("")
 while len(t_reasons_3) < 3: t_reasons_3.append("")
 
-with tab1: show_picker_grid_card(t_picks_2, t_picks_3, t_reasons_2, t_reasons_3, "Based on historical momentum", "Trend")
+with tab1: show_picker_grid_card(t_picks_2, t_picks_3, t_reasons_2, t_reasons_3, T["momentum_desc"], "Trend")
 
 # Random
 r_picks_2 = [f"{random.randint(0,99):02d}" for _ in range(3)]
 r_picks_3 = [f"{random.randint(0,999):03d}" for _ in range(3)]
-with tab2: show_picker_grid_card(r_picks_2, r_picks_3, ["Rand"]*3, ["Rand"]*3, "Pure Entropy", "Rand")
+with tab2: show_picker_grid_card(r_picks_2, r_picks_3, ["Rand"]*3, ["Rand"]*3, T["entropy_desc"], "Rand")
 
 # Hot
 h_picks_2 = [k for k,v in counter_2.most_common(3)]
@@ -355,25 +526,25 @@ h_picks_3 = [k for k,v in counter_3.most_common(3)]
 h_reasons_3 = [f"{counter_3[k]} hits" for k in h_picks_3]
 while len(h_picks_2)<3: h_picks_2.append("--"); h_reasons_2.append("")
 while len(h_picks_3)<3: h_picks_3.append("--"); h_reasons_3.append("")
-with tab3: show_picker_grid_card(h_picks_2, h_picks_3, h_reasons_2, h_reasons_3, "Most Frequent Numbers", "Hot")
+with tab3: show_picker_grid_card(h_picks_2, h_picks_3, h_reasons_2, h_reasons_3, T["freq_desc"], "Hot")
 
 # -----------------------------------------------
 # Module 3: Mathematical Truth (数学真相概率表)
 # -----------------------------------------------
 st.divider()
-st.subheader("📊 Mathematical Truth")
-st.markdown("*Prize probabilities and expected values based on official lottery structure*")
+st.subheader(T["math_truth"])
+st.markdown(f"*{T['math_desc']}*")
 
 # Thai Lottery Prize Structure
 prize_data = [
-    {"Prize": "1st Prize", "Probability": "1/1,000,000", "Payout": "6,000,000 THB", "EV/Ticket": "6.00 THB"},
-    {"Prize": "Nearby 1st", "Probability": "2/1,000,000", "Payout": "100,000 THB", "EV/Ticket": "0.20 THB"},
-    {"Prize": "2nd Prize", "Probability": "5/1,000,000", "Payout": "200,000 THB", "EV/Ticket": "1.00 THB"},
-    {"Prize": "3rd Prize", "Probability": "10/1,000,000", "Payout": "80,000 THB", "EV/Ticket": "0.80 THB"},
-    {"Prize": "4th Prize", "Probability": "50/1,000,000", "Payout": "40,000 THB", "EV/Ticket": "2.00 THB"},
-    {"Prize": "5th Prize", "Probability": "100/1,000,000", "Payout": "20,000 THB", "EV/Ticket": "2.00 THB"},
-    {"Prize": "3-Digit (Front/Back)", "Probability": "4,000/1,000,000", "Payout": "4,000 THB", "EV/Ticket": "16.00 THB"},
-    {"Prize": "2-Digit (Last)", "Probability": "10,000/1,000,000", "Payout": "2,000 THB", "EV/Ticket": "20.00 THB"},
+    {T["prize"]: "1st Prize", T["probability"]: "1/1,000,000", T["payout"]: "6,000,000 THB", T["ev"]: "6.00 THB"},
+    {T["prize"]: "Nearby 1st", T["probability"]: "2/1,000,000", T["payout"]: "100,000 THB", T["ev"]: "0.20 THB"},
+    {T["prize"]: "2nd Prize", T["probability"]: "5/1,000,000", T["payout"]: "200,000 THB", T["ev"]: "1.00 THB"},
+    {T["prize"]: "3rd Prize", T["probability"]: "10/1,000,000", T["payout"]: "80,000 THB", T["ev"]: "0.80 THB"},
+    {T["prize"]: "4th Prize", T["probability"]: "50/1,000,000", T["payout"]: "40,000 THB", T["ev"]: "2.00 THB"},
+    {T["prize"]: "5th Prize", T["probability"]: "100/1,000,000", T["payout"]: "20,000 THB", T["ev"]: "2.00 THB"},
+    {T["prize"]: "3-Digit (Front/Back)", T["probability"]: "4,000/1,000,000", T["payout"]: "4,000 THB", T["ev"]: "16.00 THB"},
+    {T["prize"]: "2-Digit (Last)", T["probability"]: "10,000/1,000,000", T["payout"]: "2,000 THB", T["ev"]: "20.00 THB"},
 ]
 import pandas as pd
 prize_df = pd.DataFrame(prize_data)
@@ -383,22 +554,22 @@ st.dataframe(prize_df, use_container_width=True, hide_index=True)
 total_ev = 6 + 0.2 + 1 + 0.8 + 2 + 2 + 16 + 20  # ~48 THB
 ticket_cost = 80
 st.markdown(f"""
-**Summary:**
-- 💰 Ticket Cost: **{ticket_cost} THB**
-- 📈 Expected Return per Ticket: **~{total_ev:.0f} THB**
-- 📉 Expected Loss per Ticket: **~{ticket_cost - total_ev:.0f} THB** (ROI: {((total_ev/ticket_cost)-1)*100:.1f}%)
+**{T["summary"]}**
+- 💰 {T["ticket_cost"]}: **{ticket_cost} THB**
+- 📈 {T["expected_return"]}: **~{total_ev:.0f} THB**
+- 📉 {T["expected_loss"]}: **~{ticket_cost - total_ev:.0f} THB** (ROI: {((total_ev/ticket_cost)-1)*100:.1f}%)
 """)
 
 # -----------------------------------------------
 # Module 4: Historical Backtest (历史模拟回测)
 # -----------------------------------------------
 st.divider()
-st.subheader("⏪ Historical Backtest")
-st.markdown("*Simulate playing with historical data*")
+st.subheader(T["backtest_title"])
+st.markdown(f"*{T['backtest_desc']}*")
 
-backtest_years = st.slider("Backtest Period (Years)", min_value=1, max_value=10, value=3)
+backtest_years = st.slider(T["backtest_period"], min_value=1, max_value=10, value=3)
 
-if st.button("Run Backtest"):
+if st.button(T["run_backtest"]):
     # Get data for backtest
     draws_per_year = 24
     total_periods = min(backtest_years * draws_per_year, len(df))
@@ -446,30 +617,31 @@ if st.button("Run Backtest"):
         
         bt_col1, bt_col2 = st.columns(2)
         with bt_col1:
-            st.metric("🔥 Trend Strategy", f"{trend_hits} wins", f"ROI: {((trend_hits * 2000 - total_cost) / total_cost * 100):.1f}%")
+            st.metric(T["trend_strat"], f"{trend_hits} wins", f"ROI: {((trend_hits * 2000 - total_cost) / total_cost * 100):.1f}%")
         with bt_col2:
-            st.metric("🎲 Random Strategy", f"{random_hits} wins", f"ROI: {((random_hits * 2000 - total_cost) / total_cost * 100):.1f}%")
+            st.metric(T["rand_strat"], f"{random_hits} wins", f"ROI: {((random_hits * 2000 - total_cost) / total_cost * 100):.1f}%")
         
         # Conclusion
         diff = trend_hits - random_hits
+        st.markdown(f"**{T['backtest_conclusion']}**")
         if abs(diff) <= 2:
-            st.info("📊 **Conclusion**: Both strategies perform similarly. This confirms the lottery's random nature.")
+            st.info("📊 Both strategies perform similarly. This confirms the lottery's random nature.")
         elif diff > 0:
-            st.success(f"📊 **Conclusion**: Trend strategy slightly ahead (+{diff}), but could be luck.")
+            st.success(f"📊 Trend strategy slightly ahead (+{diff}), but could be luck.")
         else:
-            st.warning(f"📊 **Conclusion**: Random strategy won (+{-diff})! Chasing hot numbers doesn't always work.")
+            st.warning(f"📊 Random strategy won (+{-diff})! Chasing hot numbers doesn't always work.")
 
 # -----------------------------------------------
 # Module 5: Monte Carlo Simulation (蒙特卡洛模拟)
 # -----------------------------------------------
 st.divider()
-st.subheader("🎰 Monte Carlo Simulation")
+st.subheader(T["monte_carlo"])
 st.markdown("*Large-scale random sampling simulation*")
 
-mc_years = st.slider("Simulation Period (Years)", min_value=1, max_value=10, value=5, key="mc_years")
-mc_tickets = st.slider("Tickets per Draw", min_value=1, max_value=10, value=1, key="mc_tickets")
+mc_years = st.slider(T["simulation_period"], min_value=1, max_value=10, value=5, key="mc_years")
+mc_tickets = st.slider(T["tickets_per_draw"], min_value=1, max_value=10, value=1, key="mc_tickets")
 
-if st.button("Run Monte Carlo"):
+if st.button(T["run_sim"]):
     sims = int(24 * mc_years)  # 24 draws per year
     total_cost = 0
     total_win = 0
@@ -505,17 +677,17 @@ if st.button("Run Monte Carlo"):
     
     mc_col1, mc_col2, mc_col3 = st.columns(3)
     with mc_col1:
-        st.metric("Total Cost", f"{total_cost:,} THB")
+        st.metric(T["total_cost"], f"{total_cost:,} THB")
     with mc_col2:
-        st.metric("Total Winnings", f"{total_win:,} THB")
+        st.metric(T["total_win"], f"{total_win:,} THB")
     with mc_col3:
-        st.metric("Net Profit", f"{net:,} THB", delta=f"{(net/total_cost*100):.1f}%" if total_cost > 0 else "0%")
+        st.metric(T["net_profit"], f"{net:,} THB", delta=f"{(net/total_cost*100):.1f}%" if total_cost > 0 else "0%")
     
-    st.markdown(f"**Wins**: 2-digit: {wins_breakdown['2-digit']} | 3-digit: {wins_breakdown['3-digit']} | Other: {wins_breakdown['other']} | Jackpot: {wins_breakdown['jackpot']}")
+    st.markdown(f"**{T['win_breakdown'].format(wins_breakdown['2-digit'], wins_breakdown['3-digit'], wins_breakdown['other'], wins_breakdown['jackpot'])}**")
     
     if jackpot_hit:
         st.balloons()
-        st.success("🤯 JACKPOT HIT! (This is extremely rare - don't expect this in real life!)")
+        st.success(T["jackpot_msg"])
     elif net > 0:
         st.success("💰 Profit! But remember, this is just simulation luck.")
     else:
@@ -525,8 +697,8 @@ if st.button("Run Monte Carlo"):
 # Module 6: Scientific Validation (科学有效性检验)
 # -----------------------------------------------
 st.divider()
-st.subheader("🧪 Scientific Validation")
-st.markdown("*Chi-Square test to verify lottery randomness*")
+st.subheader(T["validation_title"])
+st.markdown(f"*{T['validation_desc']}*")
 
 # Chi-Square Test on 2-digit numbers
 all_2d_for_chi = [str(row['prize_2digits']).strip().zfill(2) for idx, row in df.iterrows() if str(row['prize_2digits']).strip().lower() != 'nan']
@@ -547,19 +719,20 @@ if total_draws_chi > 0:
     
     chi_col1, chi_col2 = st.columns(2)
     with chi_col1:
-        st.metric("Sample Size", f"{total_draws_chi} draws")
-        st.metric("Chi-Square (χ²)", f"{chi_square_stat:.2f}")
+        st.metric(T["sample_size"], f"{total_draws_chi} draws")
+        st.metric(T["chi_square"], f"{chi_square_stat:.2f}")
     with chi_col2:
-        st.metric("Critical Value (p=0.05)", f"{critical_value}")
+        st.metric(T["critical_value"], f"{critical_value}")
         if chi_square_stat < critical_value:
-            st.success("✅ Fair: Random distribution (H₀ accepted)")
+            st.success(T["fair_stat"])
         else:
-            st.warning("⚠️ Bias Detected")
+            st.warning(T["bias_stat"])
     
+    st.markdown(f"**{T['conclusion_title']}**")
     if chi_square_stat < critical_value:
-        st.info("📊 **Conclusion**: The lottery is truly random. Historical patterns are just noise.")
+        st.info(T["conclusion_random"])
     else:
-        st.warning("📊 **Conclusion**: Statistical deviation detected. Could be sampling artifact or genuine bias.")
+        st.warning(T["conclusion_bias"])
 
 # -----------------------------------------------
 # Footer
@@ -567,8 +740,8 @@ if total_draws_chi > 0:
 st.divider()
 st.markdown(clean_html(f"""
 <div style="text-align: center; margin-top: 20px;">
-<h3>☕ Support Creator</h3>
-<p style="color: #666;">If you find this useful.</p>
+<h3>{T["support_creator"]}</h3>
+<p style="color: #666;">{T["support_desc"]}</p>
 </div>
 """), unsafe_allow_html=True)
 
