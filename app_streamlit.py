@@ -11,6 +11,42 @@ from bs4 import BeautifulSoup
 import re
 import time
 
+import firebase_admin
+from firebase_admin import auth, firestore
+
+# --- Firebase Zero-Key Initialization ---
+if not firebase_admin._apps:
+    firebase_admin.initialize_app()
+db = firestore.client()
+
+def check_subscription():
+    if st.session_state.get('authenticated'):
+        return True
+
+    token = st.query_params.get("token")
+    if not token:
+        st.error("⚠️ 访问凭证缺失：请确认您已通过用户中心跳转。")
+        st.stop()
+
+    try:
+        decoded_token = auth.verify_id_token(token)
+        uid = decoded_token['uid']
+        user_ref = db.collection('subscribers').document(uid)
+        doc = user_ref.get()
+        
+        if doc.exists and doc.to_dict().get('status') == 'active':
+            st.session_state['authenticated'] = True
+            return True
+        else:
+            st.error("🔒 您的订阅当前处于非活跃状态。")
+            st.stop()
+    except Exception:
+        st.error("⛔ 认证令牌无效或已过期。")
+        st.stop()
+
+# Enforce Auth
+check_subscription()
+
 # ------------------------------------------------------------
 # 🎨 界面样式 (原始风格)
 # ------------------------------------------------------------
