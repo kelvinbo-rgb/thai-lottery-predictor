@@ -34,6 +34,21 @@ class GLOScraper:
             if date_elem:
                 date_text = date_elem.get_text(strip=True)
             
+            # --- Thai Date Parsing ---
+            # Example: "งวดวันที่ 16 เมษายน 2569"
+            thai_months = {
+                "มกราคม": 1, "กุมภาพันธ์": 2, "มีนาคม": 3, "เมษายน": 4,
+                "พฤษภาคม": 5, "มิถุนายน": 6, "กรกฎาคม": 7, "สิงหาคม": 8,
+                "กันยายน": 9, "ตุลาคม": 10, "พฤศจิกายน": 11, "ธันวาคม": 12
+            }
+            iso_date = datetime.date.today().strftime("%Y-%m-%d")
+            match = re.search(r'(\d{1,2})\s+(\w+)\s+(\d{4})', date_text)
+            if match:
+                day = int(match.group(1))
+                month = thai_months.get(match.group(2), 1)
+                year = int(match.group(3)) - 543 # 2569 -> 2026
+                iso_date = f"{year}-{month:02d}-{day:02d}"
+            
             # 2. Extract Prize 1
             p1 = ""
             p1_elem = soup.find("strong", class_="lotto-check__number")
@@ -69,7 +84,7 @@ class GLOScraper:
                 return None
 
             return {
-                "date": date_text,
+                "date": iso_date,
                 "prize_1st": p1,
                 "prize_2digits": p2d,
                 "official_chart_url": chart_url,

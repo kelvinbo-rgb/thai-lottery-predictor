@@ -156,22 +156,40 @@ def format_display_date(dt_obj):
     return dt_obj.strftime("%d %b %Y")
 
 # ------------------------------------------------------------
-# 🤖 Data Pipeline (Cloud Native)
+# 🤖 Data Pipeline (Cloud Native with Auto-Sync)
 # ------------------------------------------------------------
 @st.cache_data(ttl=600)
 def get_ui_data():
-    raw_data = load_data() # Now fetching from Firestore
-    if not raw_data:
-        return pd.DataFrame()
+    from glo_scraper import GLOScraper
     
-    df = pd.DataFrame(raw_data)
+    raw_data = load_data() # Fetching from Firestore
+    df = pd.DataFrame(raw_data) if raw_data else pd.DataFrame()
     
     def parse_dt(d):
         try: return pd.to_datetime(d, format="%Y-%m-%d")
         except: return pd.NaT
     
-    df['date_obj'] = df['date'].apply(parse_dt)
-    df = df.sort_values('date_obj', ascending=False).reset_index(drop=True)
+    if not df.empty:
+        df['date_obj'] = df['date'].apply(parse_dt)
+        df = df.sort_values('date_obj', ascending=False).reset_index(drop=True)
+        
+        # --- Auto-Sync Logic ---
+        # If the latest draw is older than today and it's around lottery time (1st/16th)
+        latest_date = df.iloc[0]['date_obj']
+        today = datetime.date.today()
+        if (today - latest_date.date()).days >= 1:
+            st.info("🔄 检测到新数据，正在同步官方中奖信息...")
+            scraper = GLOScraper()
+            new_draw = scraper.fetch_latest_results()
+            if new_draw and new_draw.get('prize_1st'):
+                # Save back to Firestore
+                from lottery_predictor import save_new_draw
+                save_new_draw(None, new_draw)
+                # Reload data
+                raw_data = load_data()
+                df = pd.DataFrame(raw_data)
+                df['date_obj'] = df['date'].apply(parse_dt)
+                df = df.sort_values('date_obj', ascending=False).reset_index(drop=True)
     return df
 
 df = get_ui_data()
