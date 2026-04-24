@@ -12,6 +12,15 @@ import re
 import requests
 from typing import List, Dict, Any, Optional
 from bs4 import BeautifulSoup
+import firebase_admin
+from firebase_admin import credentials, firestore
+from glo_scraper import GLOScraper
+
+# --- Firestore Initialization ---
+if not firebase_admin._apps:
+    firebase_admin.initialize_app()
+db = firestore.client()
+COLLECTION_NAME = "lottery_history"
 
 # ------------------------------------------------------------
 # Configuration
@@ -61,18 +70,23 @@ def format_date_iso(d: datetime.date) -> str:
 # ------------------------------------------------------------
 # Helper Functions
 # ------------------------------------------------------------
-def load_data(filepath: str) -> List[Dict[str, str]]:
-    """Load CSV data into a list of dictionaries."""
-    data = []
+def load_data(filepath: str = None) -> List[Dict[str, str]]:
+    """Load historical data from Firestore (descending by date)."""
+    print("☁️ Fetching historical data from Firestore...")
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                data.append(row)
-    except FileNotFoundError:
-        print(f"Error: {filepath} not found.")
-        sys.exit(1)
-    return data
+        docs = db.collection(COLLECTION_NAME).order_by("date", direction=firestore.Query.DESCENDING).stream()
+        data = []
+        for doc in docs:
+            d = doc.to_dict()
+            # Ensure lists are strings to maintain compatibility with legacy parsing
+            for key in ["prize_pre_3digit", "prize_sub_3digits", "nearby_1st", "prize_2nd", "prize_3rd", "prize_4th", "prize_5th"]:
+                if key in d and isinstance(d[key], list):
+                    d[key] = str(d[key])
+            data.append(d)
+        return data
+    except Exception as e:
+        print(f"❌ Firestore Load Error: {e}")
+        return []
 
 
 def parse_list_string(s: str) -> List[str]:
@@ -86,38 +100,27 @@ def parse_list_string(s: str) -> List[str]:
 
 
 def save_new_draw(filepath: str, draw_data: Dict[str, Any]) -> None:
-    """Append a new draw dictionary to the CSV file."""
-    file_exists = os.path.exists(filepath)
-    row = {
-        "date": draw_data["date"],
-        "prize_1st": draw_data["prize_1st"],
-        "prize_pre_3digit": str(draw_data["prize_pre_3digit"]),
-        "prize_sub_3digits": str(draw_data["prize_sub_3digits"]),
-        "prize_2digits": draw_data["prize_2digits"],
-        "nearby_1st": "[]",
-        "prize_2nd": "[]",
-        "prize_3rd": "[]",
-        "prize_4th": "[]",
-        "prize_5th": "[]",
-    }
-    with open(filepath, "a", newline="", encoding="utf-8") as f:
-        fieldnames = [
-            "date",
-            "prize_1st",
-            "prize_pre_3digit",
-            "prize_sub_3digits",
-            "prize_2digits",
-            "nearby_1st",
-            "prize_2nd",
-            "prize_3rd",
-            "prize_4th",
-            "prize_5th",
-        ]
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow(row)
-    print(f"✅ 成功添加 {draw_data['date']} 的数据到数据库。")
+    """Save a new draw result to Firestore."""
+    try:
+        doc_id = draw_data["date"]
+        # Ensure data is Firestore-friendly (converting string lists back to actual lists)
+        db_row = {
+            "date": draw_data["date"],
+            "prize_1st": draw_data["prize_1st"],
+            "prize_pre_3digit": draw_data["prize_pre_3digit"] if isinstance(draw_data["prize_pre_3digit"], list) else parse_list_string(str(draw_data["prize_pre_3digit"])),
+            "prize_sub_3digits": draw_data["prize_sub_3digits"] if isinstance(draw_data["prize_sub_3digits"], list) else parse_list_string(str(draw_data["prize_sub_3digits"])),
+            "prize_2digits": draw_data["prize_2digits"],
+            "nearby_1st": draw_data.get("nearby_1st", []),
+            "prize_2nd": draw_data.get("prize_2nd", []),
+            "prize_3rd": draw_data.get("prize_3rd", []),
+            "prize_4th": draw_data.get("prize_4th", []),
+            "prize_5th": draw_data.get("prize_5th", []),
+            "updated_at": firestore.SERVER_TIMESTAMP
+        }
+        db.collection(COLLECTION_NAME).document(doc_id).set(db_row)
+        print(f"✅ Saved results for {doc_id} to Firestore.")
+    except Exception as e:
+        print(f"❌ Firestore Save Error: {e}")
 
 
 def input_new_draw() -> Dict[str, Any] | None:
@@ -467,7 +470,9 @@ HEADERS = {
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/124.0.0.0 Safari/537.36"
-    )
+    ),
+    "Referer": "https://lottery.kapook.com/",
+    "Accept-Language": "th-TH,th;q=0.9,en-US;q=0.8,en;q=0.7"
 }
 
 # Thai month names to number mapping
@@ -653,17 +658,18 @@ def auto_update_data() -> None:
     
     print(f"找到 {len(draw_links)} 个开奖日期链接。")
     
-    # Filter to only 2025 draws that are missing
+    # Filter to current year and previous year draws that are missing
+    current_year = datetime.date.today().year
     missing_draws = []
     for link in draw_links:
-        if link["date"].year == 2025 and link["date"] not in existing_dates:
+        if link["date"].year >= (current_year - 1) and link["date"] not in existing_dates:
             missing_draws.append(link)
     
     if not missing_draws:
         print("🔎 没有发现新记录，数据库已经是最新的。")
         return
     
-    print(f"发现 {len(missing_draws)} 个缺失的 2025 年记录，开始抓取...")
+    print(f"发现 {len(missing_draws)} 个缺失的历史记录，开始抓取...")
     
     # Fetch data for each missing draw
     new_draws = []
@@ -758,7 +764,7 @@ def main() -> None:
     print("\n[功能选择]")
     print("1. 🔮 直接开始预测")
     print("2. 📝 录入新开奖数据")
-    print("3. 🌐 自动从 Kapook 抓取 2025（2568）缺失数据并更新数据库")
+    print("3. 🌐 自动从 Kapook 抓取缺失数据并更新数据库")
     choice = input("请输入选项 (1/2/3): ").strip()
     
     if choice == "2":
