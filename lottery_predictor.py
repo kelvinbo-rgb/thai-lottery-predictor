@@ -115,6 +115,7 @@ def save_new_draw(filepath: str, draw_data: Dict[str, Any]) -> None:
             "prize_3rd": draw_data.get("prize_3rd", []),
             "prize_4th": draw_data.get("prize_4th", []),
             "prize_5th": draw_data.get("prize_5th", []),
+            "official_chart_url": draw_data.get("official_chart_url", ""),
             "updated_at": firestore.SERVER_TIMESTAMP
         }
         db.collection(COLLECTION_NAME).document(doc_id).set(db_row)
