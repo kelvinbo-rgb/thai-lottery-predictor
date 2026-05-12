@@ -1,19 +1,18 @@
-from scrapling import Fetcher
+import requests
 import datetime
 import logging
 from typing import Optional, Dict, Any
 
 class GLOScraper:
-    """
-    Thai Lottery Scraper targeting the Official Government Lottery Office (GLO) API.
-    Uses Scrapling for stealthy access and direct JSON extraction.
-    """
-    
-    # Official API for getting the latest lottery results directly
-    API_URL = "https://www.glo.or.th/api/lottery/getLatestLottery"
-    
     def __init__(self):
-        self.fetcher = Fetcher(stealth=True)
+        # 抛弃臃肿的浏览器内核，直接用轻量级 requests
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+            "Origin": "https://www.glo.or.th",
+            "Referer": "https://www.glo.or.th/home-page"  # ✅ 最新的官方主页路由
+        }
 
     def _get_fallback_date(self) -> str:
         """
@@ -41,28 +40,19 @@ class GLOScraper:
 
     def fetch_latest_results(self, target_date: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """
-        Fetches lottery results.
-        If target_date is None, it uses GLO's default 'latest' behavior (Solution A).
-        If Solution A fails, it falls back to a calculated likely date (Solution B).
+        Fetches lottery results via light-weight requests.
+        If target_date is None, it uses GLO's default 'latest' behavior.
         """
         try:
-            # Solution A: Try empty body to get the absolute latest from GLO
             payload = {"date": target_date} if target_date else {}
+            logging.info(f"🚀 Fetching official GLO results via requests (Target: {target_date or 'Latest'})...")
             
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-                "Accept": "application/json, text/plain, */*",
-                "Content-Type": "application/json",
-                "Origin": "https://www.glo.or.th",
-                "Referer": "https://www.glo.or.th/home-page"
-            }
-            
-            logging.info(f"🚀 Fetching official GLO results (Target: {target_date or 'Latest'})...")
-            
-            response = self.fetcher.post(
-                self.API_URL, 
+            # 使用 requests.post 替代 scrapling，极速且无底层依赖隐患
+            response = requests.post(
+                "https://www.glo.or.th/api/lottery/getLatestLottery", 
                 json=payload,
-                headers=headers
+                headers=self.headers,
+                timeout=15
             )
             
             if response.status_code != 200:
@@ -82,7 +72,7 @@ class GLOScraper:
                 logging.warning(f"⚠️ No results found in response data.")
                 return None
 
-            # Extracting with precise keys from getLatestLottery response
+            # Extracting with precise keys from GLO response
             actual_date = res_data.get("date", target_date)
             p1 = res_data.get("first", {}).get("number", [{}])[0].get("value", "")
             p2d = res_data.get("last2", {}).get("number", [{}])[0].get("value", "")
@@ -111,6 +101,5 @@ class GLOScraper:
 
 if __name__ == "__main__":
     scraper = GLOScraper()
-    print("--- Testing Solution A (Latest) ---")
+    print("--- Testing via requests (Latest) ---")
     print(scraper.fetch_latest_results())
-
