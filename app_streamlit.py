@@ -255,7 +255,7 @@ st.markdown(clean_html(f"""
 <div class="sub-prize-item"><div class="result-title">{T["p2d"]}</div><div class="sub-number sub-number-2d">{latest_2d}</div></div>
 </div>
 <div style="margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px;">
-    <a href="https://www.glo.or.th/home" target="_blank" style="text-decoration: none;">
+    <a href="https://www.glo.or.th/home-page" target="_blank" style="text-decoration: none;">
         <button style="background-color: #173858; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 0.9em; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             🏛️ 官方主页
         </button>

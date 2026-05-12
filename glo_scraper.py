@@ -54,7 +54,7 @@ class GLOScraper:
                 "Accept": "application/json, text/plain, */*",
                 "Content-Type": "application/json",
                 "Origin": "https://www.glo.or.th",
-                "Referer": "https://www.glo.or.th/home"
+                "Referer": "https://www.glo.or.th/home-page"
             }
             
             logging.info(f"🚀 Fetching official GLO results (Target: {target_date or 'Latest'})...")
