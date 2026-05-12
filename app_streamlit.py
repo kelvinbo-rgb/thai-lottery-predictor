@@ -159,37 +159,59 @@ def format_display_date(dt_obj):
 # 🤖 Data Pipeline (Cloud Native with Auto-Sync)
 # ------------------------------------------------------------
 @st.cache_data(ttl=600)
+def fetch_db_data():
+    # 只缓存纯粹的数据库读取，把爬虫动作剥离出去
+    return load_data()
+
 def get_ui_data():
     from glo_scraper import GLOScraper
+    from lottery_predictor import save_new_draw
     
-    raw_data = load_data() # Fetching from Firestore
+    raw_data = fetch_db_data()
     df = pd.DataFrame(raw_data) if raw_data else pd.DataFrame()
     
-    def parse_dt(d):
-        try: return pd.to_datetime(d, format="%Y-%m-%d")
-        except: return pd.NaT
+    if df.empty:
+        return df
     
-    if not df.empty:
-        df['date_obj'] = df['date'].apply(parse_dt)
-        df = df.sort_values('date_obj', ascending=False).reset_index(drop=True)
+    # 强悍的时间解析：自动适应各种奇葩日期格式，防止新数据沉底
+    def parse_dt(d):
+        try: return pd.to_datetime(d, errors='coerce')
+        except: return pd.NaT
         
-        # --- Auto-Sync Logic ---
-        # If the latest draw is older than today and it's around lottery time (1st/16th)
-        latest_date = df.iloc[0]['date_obj']
-        today = datetime.date.today()
-        if (today - latest_date.date()).days >= 1:
-            st.info("🔄 检测到新数据，正在同步官方中奖信息...")
+    df['date_obj'] = df['date'].apply(parse_dt)
+    df = df.sort_values('date_obj', ascending=False).reset_index(drop=True)
+    
+    latest_date = df.iloc[0]['date_obj']
+    today = pd.Timestamp.today()
+    
+    # --- Auto-Sync 逻辑（移出缓存区，确保每次刷新都能真实判定） ---
+    if pd.notna(latest_date) and (today.date() - latest_date.date()).days >= 1:
+        status_box = st.empty()
+        status_box.info("🔄 检测到新数据，正在请求官方接口...")
+        
+        try:
             scraper = GLOScraper()
             new_draw = scraper.fetch_latest_results()
+            
             if new_draw and new_draw.get('prize_1st'):
-                # Save back to Firestore
-                from lottery_predictor import save_new_draw
+                # 强制规范化新数据的日期，确保它永远排在最上面
+                if '-' not in str(new_draw['date']) or len(str(new_draw['date'])) != 10:
+                    new_draw['date'] = today.strftime("%Y-%m-%d")
+                    
                 save_new_draw(None, new_draw)
-                # Reload data
-                raw_data = load_data()
-                df = pd.DataFrame(raw_data)
-                df['date_obj'] = df['date'].apply(parse_dt)
-                df = df.sort_values('date_obj', ascending=False).reset_index(drop=True)
+                status_box.success(f"✅ 官方数据同步成功！最新一期: {new_draw['date']}")
+                time.sleep(1.5)
+                st.cache_data.clear() # 炸毁旧数据的缓存
+                st.rerun() # 强制刷新网页，呈现最新结果
+            else:
+                status_box.warning("⚠️ 官方接口暂无最新数据，将继续使用现有数据。")
+                time.sleep(2)
+                status_box.empty() # 隐藏提示框，不影响用户查看旧数据
+        except Exception as e:
+            status_box.error(f"❌ 抓取过程出错: {str(e)}")
+            time.sleep(3)
+            status_box.empty()
+            
     return df
 
 df = get_ui_data()
@@ -312,11 +334,52 @@ st.divider()
 st.subheader(T["math_truth"])
 st.markdown(f"*{T['math_desc']}*")
 p_data = [
-    {T["prize"]: "1st Prize", T["probability"]: "1/1,000,000", T["payout"]: "6,000,000 THB"},
-    {T["prize"]: "3-Digit (F/B)", T["probability"]: "4,000/1,000,000", T["payout"]: "4,000 THB"},
-    {T["prize"]: "2-Digit (Last)", T["probability"]: "10,000/1,000,000", T["payout"]: "2,000 THB"},
+    {"奖项 (Prize)": "1st Prize", "中奖概率 (Probability)": "1/1,000,000", "奖金 (Payout)": "6,000,000 THB"},
+    {"奖项 (Prize)": "3-Digit (F/B)", "中奖概率 (Probability)": "4,000/1,000,000", "奖金 (Payout)": "4,000 THB"},
+    {"奖项 (Prize)": "2-Digit (Last)", "中奖概率 (Probability)": "10,000/1,000,000", "奖金 (Payout)": "2,000 THB"},
 ]
 st.dataframe(pd.DataFrame(p_data), use_container_width=True, hide_index=True)
+
+# ------------------------------------------------------------
+# 🎰 Monte Carlo Simulation (新加入的模拟模块)
+# ------------------------------------------------------------
+st.divider()
+st.subheader(T.get("monte_carlo", "🎰 蒙特卡洛模拟 (Monte Carlo)"))
+st.markdown("*假设每期坚持买 1 张，持续 5 年 (120期)，看看完全靠运气的长期回报：*")
+
+# 模拟参数
+simulations = 120
+ticket_price = 80
+total_cost = simulations * ticket_price
+total_win = 0
+jackpot_hit = False
+
+# 运行数学模拟引擎
+for _ in range(simulations):
+    if random.random() < (10000 / 1000000): total_win += 2000
+    if random.random() < (4000 / 1000000): total_win += 4000
+    if random.random() < (1 / 1000000): 
+        total_win += 6000000
+        jackpot_hit = True
+    # 其他小奖综合概率
+    other_prob = (5+10+50+100+2) / 1000000
+    if random.random() < other_prob: total_win += 30000
+
+net_profit = total_win - total_cost
+
+# 渲染精美的数据卡片
+m1, m2, m3 = st.columns(3)
+m1.metric("总投入 (Cost)", f"฿{total_cost}")
+m2.metric("总奖金 (Win)", f"฿{total_win}")
+m3.metric("净盈亏 (Net Profit)", f"฿{net_profit}", delta=net_profit)
+
+# 动态点评
+if jackpot_hit:
+    st.success("🤯 天呐！模拟中竟然中了一等奖 (600万)！这属于极度罕见的幸存者偏差，请勿当真！")
+elif net_profit > 0:
+    st.info("💡 运气不错，小赚一笔！但这主要是靠运气而非策略。")
+else:
+    st.warning("💡 长期看依然是亏损的。大数据证明：请将彩票视为【娱乐消费】而非投资。")
 
 # ------------------------------------------------------------
 # ☕ Footer
