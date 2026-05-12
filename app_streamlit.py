@@ -90,13 +90,15 @@ LANG = {
         "freq_desc": "ตัวเลขที่ออกบ่อยที่สุด",
         "two_digits": "2 ตัว",
         "three_digits": "3 ตัว",
+        "official_home": "🏛️ หน้าแรกอย่างเป็นทางการ",
+        "view_chart": "📜 ดูใบตรวจสลาก (Winning Sheet)",
         "math_truth": "📊 ความจริงเชิงสถิติ",
-        "math_desc": "โอกาสถูกรางวัลและมูลค่าทางคณิตศาสตร์",
-        "p1": "รางวัลที่ 1", "p3_pre": "3 ตัวหน้า", "p3_sub": "3 ตัวท้าย", "p2d": "เลขท้าย 2 ตัว",
-        "summary": "สรุป:", "ticket_cost": "ต้นทุนต่อใบ", "expected_return": "มูลค่าเฉลี่ย", "expected_loss": "ส่วนต่างขาดทุนเฉลี่ย",
-        "backtest_title": "⏪ ย้อนรอยประวัติศาสตร์", "backtest_desc": "จำลองการซื้อหวยในอดีต", "run_backtest": "เริ่มจำลอง",
-        "monte_carlo": "🎰 จำลองเหตุการณ์ (Monte Carlo)", "total_cost": "ทุนรวม", "total_win": "รางวัลรวม", "net_profit": "กำไร/ขาดทุน",
-        "validation_title": "🧪 ทดสอบความเป็นธรรม", "fair_stat": "✅ เป็นศูนย์กลาง", "bias_stat": "⚠️ มีความเอนเอียง",
+        "validation_title": "🧪 ทดสอบความเป็นธรรม",
+        "fair_stat": "✅ เป็นศูนย์กลาง", "bias_stat": "⚠️ มีความเอนเอียง",
+        "mc_desc": "*สมมติว่าซื้อหวยงวดละ 1 ใบ ติดต่อกัน 5 ปี (120 งวด) มาดูผลตอบแทนระยะยาวกัน:*",
+        "mc_jackpot": "🤯 พระเจ้าช่วย! ถูกรางวัลที่ 1 ในการจำลอง! นี่เป็นโชคล้วนๆ อย่าจริงจังเกินไป!",
+        "mc_win": "💡 โชคดีจัง ได้กำไรนิดหน่อย! แต่นี่เป็นเรื่องของโชคล้วนๆ",
+        "mc_loss": "💡 ในระยะยาวก็ยังขาดทุนอยู่ดี โปรดมองว่าหวยคือ【ความบันเทิง】ไม่ใช่การลงทุน",
         "support_creator": "☕ สนับสนุนผู้พัฒนา"
     },
     "中文": {
@@ -116,7 +118,14 @@ LANG = {
         "summary": "总结:", "ticket_cost": "彩票成本", "expected_return": "预期回报", "expected_loss": "单张平均亏损",
         "backtest_title": "⏪ 历史模拟回测", "backtest_desc": "模拟历史区间策略效果", "run_backtest": "开始回测",
         "monte_carlo": "🎰 蒙特卡洛模拟", "total_cost": "总投入", "total_win": "总奖金", "net_profit": "净盈亏",
-        "validation_title": "🧪 科学有效性检验", "fair_stat": "✅ 分布均匀", "bias_stat": "⚠️ 发现显著偏差",
+        "official_home": "🏛️ 官方主页",
+        "view_chart": "📜 查看基因图谱 (Official Chart)",
+        "validation_title": "🧪 科学有效性检验",
+        "fair_stat": "✅ 分布均匀", "bias_stat": "⚠️ 发现显著偏差",
+        "mc_desc": "*假设每期坚持买 1 张，持续 5 年 (120期)，看看完全靠运气的长期回报：*",
+        "mc_jackpot": "🤯 天呐！模拟中竟然中了一等奖！这属于极度罕见的幸存者偏差，请勿当真！",
+        "mc_win": "💡 运气不错，小赚一笔！但这主要是靠运气而非策略。",
+        "mc_loss": "💡 长期看依然是亏损的。大数据证明：请将彩票视为【娱乐消费】而非投资。",
         "support_creator": "☕ 支持开发者"
     },
     "English": {
@@ -136,7 +145,14 @@ LANG = {
         "summary": "Summary:", "ticket_cost": "Ticket Cost", "expected_return": "Expected Return", "expected_loss": "Expected Loss",
         "backtest_title": "⏪ Historical Backtest", "backtest_desc": "Simulate playing with historical data", "run_backtest": "Run Backtest",
         "monte_carlo": "🎰 Monte Carlo Simulation", "total_cost": "Total Cost", "total_win": "Total Winnings", "net_profit": "Net Profit",
-        "validation_title": "🧪 Scientific Validation", "fair_stat": "✅ Fair", "bias_stat": "⚠️ Bias Detected",
+        "official_home": "🏛️ Official Home",
+        "view_chart": "📜 View Winning Sheet (Chart)",
+        "validation_title": "🧪 Scientific Validation",
+        "fair_stat": "✅ Fair", "bias_stat": "⚠️ Bias Detected",
+        "mc_desc": "*Assuming buying 1 ticket per draw for 5 years (120 draws). Let's see the long-term ROI:*",
+        "mc_jackpot": "🤯 Wow! You hit the 1st Prize in simulation! This is pure luck!",
+        "mc_win": "💡 Lucky you, a small profit!",
+        "mc_loss": "💡 Long-term expectation is a loss. Treat lottery as 【Entertainment】.",
         "support_creator": "☕ Support Creator"
     }
 }
@@ -257,12 +273,12 @@ st.markdown(clean_html(f"""
 <div style="margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px;">
     <a href="https://www.glo.or.th/home-page" target="_blank" style="text-decoration: none;">
         <button style="background-color: #173858; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 0.9em; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            🏛️ 官方主页
+            {T['official_home']}
         </button>
     </a>
     {f'''<a href="{latest.get('official_chart_url')}" target="_blank" style="text-decoration: none;">
         <button style="background-color: #E63946; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 0.9em; box-shadow: 0 4px 6px rgba(230, 57, 70, 0.2);">
-            📜 查看基因图谱 (Official Chart)
+            {T['view_chart']}
         </button>
     </a>''' if latest.get('official_chart_url') else ""}
 </div>
@@ -340,12 +356,23 @@ p_data = [
 ]
 st.dataframe(pd.DataFrame(p_data), use_container_width=True, hide_index=True)
 
-# ------------------------------------------------------------
-# 🎰 Monte Carlo Simulation (新加入的模拟模块)
-# ------------------------------------------------------------
+# --- 🧪 科学有效性检验 (Chi-Square) ---
 st.divider()
-st.subheader(T.get("monte_carlo", "🎰 蒙特卡洛模拟 (Monte Carlo)"))
-st.markdown("*假设每期坚持买 1 张，持续 5 年 (120期)，看看完全靠运气的长期回报：*")
+st.subheader(T["validation_title"])
+total_draws = len(all_2digits)
+if total_draws > 0:
+    expected = total_draws / 100.0
+    chi_square_stat = sum(((counter_2.get(f"{i:02d}", 0) - expected) ** 2) / expected for i in range(100))
+    st.markdown(f"**N = {total_draws}** | **Chi-Square = {chi_square_stat:.2f}**")
+    if chi_square_stat < 124.34:
+        st.success(T["fair_stat"])
+    else:
+        st.warning(T["bias_stat"])
+
+# --- 🎰 蒙特卡洛模拟 ---
+st.divider()
+st.subheader(T["monte_carlo"])
+st.markdown(T["mc_desc"])
 
 # 模拟参数
 simulations = 120
@@ -369,17 +396,14 @@ net_profit = total_win - total_cost
 
 # 渲染精美的数据卡片
 m1, m2, m3 = st.columns(3)
-m1.metric("总投入 (Cost)", f"฿{total_cost}")
-m2.metric("总奖金 (Win)", f"฿{total_win}")
-m3.metric("净盈亏 (Net Profit)", f"฿{net_profit}", delta=net_profit)
+m1.metric(T["total_cost"], f"฿{total_cost}")
+m2.metric(T["total_win"], f"฿{total_win}")
+m3.metric(T["net_profit"], f"฿{net_profit}", delta=net_profit)
 
 # 动态点评
-if jackpot_hit:
-    st.success("🤯 天呐！模拟中竟然中了一等奖 (600万)！这属于极度罕见的幸存者偏差，请勿当真！")
-elif net_profit > 0:
-    st.info("💡 运气不错，小赚一笔！但这主要是靠运气而非策略。")
-else:
-    st.warning("💡 长期看依然是亏损的。大数据证明：请将彩票视为【娱乐消费】而非投资。")
+if jackpot_hit: st.success(T["mc_jackpot"])
+elif net_profit > 0: st.info(T["mc_win"])
+else: st.warning(T["mc_loss"])
 
 # ------------------------------------------------------------
 # ☕ Footer
