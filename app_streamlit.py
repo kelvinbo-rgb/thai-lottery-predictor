@@ -157,7 +157,7 @@ LANG = {
     }
 }
 
-if "lang_choice" not in st.session_state: st.session_state.lang_choice = "中文"
+if "lang_choice" not in st.session_state: st.session_state.lang_choice = "ภาษาไทย"
 c_l, lc1, lc2, lc3 = st.columns([2, 1, 1, 1])
 with lc1: 
     if st.button("🇹🇭 ไทย", use_container_width=True): st.session_state.lang_choice = "ภาษาไทย"; st.rerun()
