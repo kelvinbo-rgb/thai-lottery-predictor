@@ -60,7 +60,8 @@ class GLOScraper:
                 return None
                 
             data = response.json()
-            res_data = data.get("response", {}).get("data", {})
+            resp_obj = data.get("response", {})
+            res_data = resp_obj.get("data", {})
             
             # If Solution A (empty date) returned null, trigger Solution B
             if not res_data and not target_date:
@@ -73,7 +74,7 @@ class GLOScraper:
                 return None
 
             # Extracting with precise keys from GLO response
-            actual_date = res_data.get("date", target_date)
+            actual_date = resp_obj.get("date", target_date)
             p1 = res_data.get("first", {}).get("number", [{}])[0].get("value", "")
             p2d = res_data.get("last2", {}).get("number", [{}])[0].get("value", "")
             pre3 = [item.get("value") for item in res_data.get("last3f", {}).get("number", [])]

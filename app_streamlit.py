@@ -241,25 +241,59 @@ def get_ui_data():
     latest_date = df.iloc[0]['date_obj']
     today = pd.Timestamp.today()
     
+    # Calculate next expected draw date based on the latest draw date
+    def get_next_expected_draw_date(last_date: datetime.date) -> datetime.date:
+        year, month, day = last_date.year, last_date.month, last_date.day
+        if day == 16:
+            if month == 12:
+                return datetime.date(year, 12, 30)
+            else:
+                next_month = month + 1
+                return datetime.date(year, next_month, 1)
+        elif day == 30 and month == 12:
+            return datetime.date(year + 1, 1, 16)
+        elif day == 2 and month == 5:
+            return datetime.date(year, 5, 16)
+        elif day == 1:
+            return datetime.date(year, month, 16)
+        else:
+            # Fallback for non-standard dates
+            if day < 16:
+                return datetime.date(year, month, 16)
+            else:
+                next_month = month + 1 if month < 12 else 1
+                next_year = year if month < 12 else year + 1
+                return datetime.date(next_year, next_month, 1)
+
+    next_expected = get_next_expected_draw_date(latest_date.date()) if pd.notna(latest_date) else None
+    
     # --- Auto-Sync 逻辑（移出缓存区，确保每次刷新都能真实判定） ---
-    if pd.notna(latest_date) and (today.date() - latest_date.date()).days >= 1:
+    # 只有当今天日期已经到达或超过预计的下一个开奖日期时，才请求官方接口检查更新
+    if next_expected and today.date() >= next_expected:
         status_box = st.empty()
-        status_box.info("🔄 检测到新数据，正在请求官方接口...")
+        status_box.info("🔄 正在检查官方数据更新...")
         
         try:
             scraper = GLOScraper()
             new_draw = scraper.fetch_latest_results()
             
-            if new_draw and new_draw.get('prize_1st'):
-                # 强制规范化新数据的日期，确保它永远排在最上面
-                if '-' not in str(new_draw['date']) or len(str(new_draw['date'])) != 10:
-                    new_draw['date'] = today.strftime("%Y-%m-%d")
-                    
-                save_new_draw(None, new_draw)
-                status_box.success(f"✅ 官方数据同步成功！最新一期: {new_draw['date']}")
-                time.sleep(1.5)
-                st.cache_data.clear() # 炸毁旧数据的缓存
-                st.rerun() # 强制刷新网页，呈现最新结果
+            if new_draw and new_draw.get('prize_1st') and new_draw.get('date'):
+                new_date_str = new_draw['date']
+                
+                # 仅在获取到的数据日期不在数据库中时，才进行保存和刷新
+                if new_date_str not in df['date'].values:
+                    # 强制规范化新数据的日期，确保它永远排在最上面
+                    if '-' not in str(new_date_str) or len(str(new_date_str)) != 10:
+                        new_draw['date'] = today.strftime("%Y-%m-%d")
+                        
+                    save_new_draw(None, new_draw)
+                    status_box.success(f"✅ 官方数据同步成功！最新一期: {new_draw['date']}")
+                    time.sleep(1.5)
+                    st.cache_data.clear() # 炸毁旧数据的缓存
+                    st.rerun() # 强制刷新网页，呈现最新结果
+                else:
+                    # 数据已是最新，静默清除提示框即可
+                    status_box.empty()
             else:
                 status_box.warning("⚠️ 官方接口暂无最新数据，将继续使用现有数据。")
                 time.sleep(2)
