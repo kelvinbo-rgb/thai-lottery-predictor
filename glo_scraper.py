@@ -80,7 +80,8 @@ class GLOScraper:
             pre3 = [item.get("value") for item in res_data.get("last3f", {}).get("number", [])]
             sub3 = [item.get("value") for item in res_data.get("last3b", {}).get("number", [])]
             
-            chart_url = f"https://www.glo.or.th/mission/reward-payment/check-reward?date={actual_date}"
+            pdf_url = resp_obj.get("pdf_url")
+            chart_url = pdf_url if pdf_url else f"https://www.glo.or.th/mission/reward-payment/check-reward?date={actual_date}"
 
             if not p1:
                 logging.warning("⚠️ Prize 1 is empty in the response.")

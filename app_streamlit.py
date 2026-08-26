@@ -116,7 +116,7 @@ LANG = {
         "total_win": "รางวัลรวม", 
         "net_profit": "กำไร/ขาดทุน",
         "official_home": "🏛️ หน้าแรกอย่างเป็นทางการ",
-        "view_chart": "📜 ดูใบตรวจสลาก (Winning Sheet)",
+        "view_chart": "📜 ใบตรวจรางวัล (Winning Sheet)",
         "validation_title": "🧪 ทดสอบความเป็นธรรม",
         "fair_stat": "✅ เป็นศูนย์กลาง", 
         "bias_stat": "⚠️ มีความเอนเอียง",
@@ -155,7 +155,7 @@ LANG = {
         "total_win": "总奖金", 
         "net_profit": "净盈亏",
         "official_home": "🏛️ 官方主页",
-        "view_chart": "📜 查看基因图谱 (Official Chart)",
+        "view_chart": "📜 查看官方中奖公报 (Winning Sheet)",
         "validation_title": "🧪 科学有效性检验",
         "fair_stat": "✅ 分布均匀", 
         "bias_stat": "⚠️ 发现显著偏差",
@@ -194,7 +194,7 @@ LANG = {
         "total_win": "Total Winnings", 
         "net_profit": "Net Profit",
         "official_home": "🏛️ Official Home",
-        "view_chart": "📜 View Winning Sheet (Chart)",
+        "view_chart": "📜 View Winning Sheet (PDF)",
         "validation_title": "🧪 Scientific Validation",
         "fair_stat": "✅ Fair", 
         "bias_stat": "⚠️ Bias Detected",
@@ -353,14 +353,9 @@ st.markdown(clean_html(f"""
 <div class="sub-prize-item"><div class="result-title">{T["p3_sub"]}</div><div class="sub-number">{suffix_str}</div></div>
 <div class="sub-prize-item"><div class="result-title">{T["p2d"]}</div><div class="sub-number sub-number-2d">{latest_2d}</div></div>
 </div>
-<div style="margin-top: 20px; text-align: center; display: flex; justify-content: center; gap: 10px;">
-    <a href="https://www.glo.or.th/home-page" target="_blank" style="text-decoration: none;">
-        <button style="background-color: #173858; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 0.9em; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            {T['official_home']}
-        </button>
-    </a>
+<div style="margin-top: 20px; text-align: center; display: flex; justify-content: center;">
     {f'''<a href="{latest.get('official_chart_url')}" target="_blank" style="text-decoration: none;">
-        <button style="background-color: #E63946; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 0.9em; box-shadow: 0 4px 6px rgba(230, 57, 70, 0.2);">
+        <button style="background-color: #E63946; color: white; border: none; padding: 11px 26px; border-radius: 22px; cursor: pointer; font-weight: 600; font-size: 0.95em; box-shadow: 0 4px 8px rgba(230, 57, 70, 0.25); white-space: nowrap; display: inline-flex; align-items: center; justify-content: center;">
             {T['view_chart']}
         </button>
     </a>''' if latest.get('official_chart_url') else ""}
